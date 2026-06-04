@@ -23,7 +23,6 @@ export function createMessageTools(): ToolDefinition[] {
       inputSchema: sendTextMessageInputSchema,
       inputShape: sendTextMessageInputSchema.shape,
       permission: "dangerous",
-      rateLimitKind: "send",
       execute: async (input, context) => successResult(await context.services.messages.sendText(input))
     }),
     defineTool({
@@ -33,7 +32,6 @@ export function createMessageTools(): ToolDefinition[] {
       inputSchema: sendTemplateMessageInputSchema,
       inputShape: sendTemplateMessageInputSchema.shape,
       permission: "dangerous",
-      rateLimitKind: "send",
       execute: async (input, context) => successResult(await context.services.messages.sendTemplate(input))
     }),
     defineTool({
@@ -43,7 +41,6 @@ export function createMessageTools(): ToolDefinition[] {
       inputSchema: sendImageMessageInputSchema,
       inputShape: sendImageMessageInputSchema.shape,
       permission: "dangerous",
-      rateLimitKind: "send",
       execute: async (input, context) => successResult(await context.services.messages.sendImage(input))
     }),
     defineTool({
@@ -53,7 +50,6 @@ export function createMessageTools(): ToolDefinition[] {
       inputSchema: sendDocumentMessageInputSchema,
       inputShape: sendDocumentMessageInputSchema.shape,
       permission: "dangerous",
-      rateLimitKind: "send",
       execute: async (input, context) => successResult(await context.services.messages.sendDocument(input))
     }),
     defineTool({
@@ -63,7 +59,6 @@ export function createMessageTools(): ToolDefinition[] {
       inputSchema: sendAudioMessageInputSchema,
       inputShape: sendAudioMessageInputSchema.shape,
       permission: "dangerous",
-      rateLimitKind: "send",
       execute: async (input, context) => successResult(await context.services.messages.sendAudio(input))
     }),
     defineTool({
@@ -73,7 +68,6 @@ export function createMessageTools(): ToolDefinition[] {
       inputSchema: sendVideoMessageInputSchema,
       inputShape: sendVideoMessageInputSchema.shape,
       permission: "dangerous",
-      rateLimitKind: "send",
       execute: async (input, context) => successResult(await context.services.messages.sendVideo(input))
     }),
     defineTool({
@@ -83,7 +77,6 @@ export function createMessageTools(): ToolDefinition[] {
       inputSchema: sendLocationMessageInputSchema,
       inputShape: sendLocationMessageInputSchema.shape,
       permission: "dangerous",
-      rateLimitKind: "send",
       execute: async (input, context) => successResult(await context.services.messages.sendLocation(input))
     }),
     defineTool({
@@ -93,7 +86,6 @@ export function createMessageTools(): ToolDefinition[] {
       inputSchema: sendContactMessageInputSchema,
       inputShape: sendContactMessageInputSchema.shape,
       permission: "dangerous",
-      rateLimitKind: "send",
       execute: async (input, context) => successResult(await context.services.messages.sendContact(input))
     }),
     defineTool({
@@ -103,7 +95,6 @@ export function createMessageTools(): ToolDefinition[] {
       inputSchema: sendInteractiveButtonsInputSchema,
       inputShape: sendInteractiveButtonsInputSchema.shape,
       permission: "dangerous",
-      rateLimitKind: "send",
       execute: async (input, context) => successResult(await context.services.messages.sendInteractiveButtons(input))
     }),
     defineTool({
@@ -113,7 +104,6 @@ export function createMessageTools(): ToolDefinition[] {
       inputSchema: sendInteractiveListInputSchema,
       inputShape: sendInteractiveListInputSchema.shape,
       permission: "dangerous",
-      rateLimitKind: "send",
       execute: async (input, context) => successResult(await context.services.messages.sendInteractiveList(input))
     }),
     defineTool({
@@ -123,7 +113,6 @@ export function createMessageTools(): ToolDefinition[] {
       inputSchema: markMessageAsReadInputSchema,
       inputShape: markMessageAsReadInputSchema.shape,
       permission: "dangerous",
-      rateLimitKind: "mutation",
       execute: async (input, context) => successResult(await context.services.messages.markMessageAsRead(input))
     })
   ];
