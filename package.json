@@ -1,7 +1,7 @@
 {
   "name": "wbmcp",
   "version": "0.1.0",
-  "description": "Production-ready MCP server for the official WhatsApp Business Platform / Cloud API.",
+  "description": "Production-ready MCP server for WhatsApp Business Cloud API automation from AI clients",
   "type": "module",
   "repository": {
     "type": "git",
@@ -12,8 +12,8 @@
     "url": "https://github.com/saravanaspar/WBMCP/issues"
   },
   "bin": {
-    "wbmcp": "./dist/index.js",
-    "whatsapp-business-mcp": "./dist/index.js"
+    "wbmcp": "dist/index.js",
+    "whatsapp-business-mcp": "dist/index.js"
   },
   "files": [
     "dist",
@@ -48,11 +48,15 @@
     "vitest": "^4.0.14"
   },
   "keywords": [
-    "wbmcp",
     "mcp",
     "model-context-protocol",
     "whatsapp",
     "whatsapp-business",
-    "whatsapp-cloud-api"
+    "whatsapp-cloud-api",
+    "meta-graph-api",
+    "ai-tools",
+    "opencode",
+    "codex",
+    "typescript"
   ]
 }

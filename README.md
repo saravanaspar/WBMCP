@@ -1,50 +1,309 @@
 # WBMCP
 
-`wbmcp` is an MCP-only TypeScript server for the official WhatsApp Business Platform / WhatsApp Cloud API through Meta Graph API.
+**WBMCP** is an MCP server for the official WhatsApp Business Cloud API. It lets MCP-compatible AI clients use WhatsApp Business tools for sending messages, managing templates, working with media, reading account details, and updating business profile information.
 
-Source repository: <https://github.com/saravanaspar/WBMCP>
+- GitHub: https://github.com/saravanaspar/WBMCP
+- npm: https://www.npmjs.com/package/wbmcp
 
-The GitHub project is named `WBMCP`. The npm package and CLI executable are lowercase `wbmcp`, which is the correct form for npm and shell usage.
+```bash
+npx -y wbmcp@latest setup
+```
 
-It exposes WhatsApp Business account operations as MCP tools and read-only MCP resources. Local `npx` installs use stdio by default and need no inbound HTTPS setup. Native TLS MCP Streamable HTTP remains available as an explicit hosted deployment mode. Plaintext HTTP transport is intentionally not supported. It does not include a dashboard, webhook host, CRM integration, campaign system, or user REST API.
+## Important note about WhatsApp Cloud API
 
-## Official API Only
+WBMCP uses the **WhatsApp Business Cloud API**.
 
-This project integrates only with the official WhatsApp Business Platform / WhatsApp Cloud API through Meta Graph API.
+When you use the Cloud API for a WhatsApp Business number, do not expect the normal WhatsApp Business app or WhatsApp Web experience for that API-connected workflow. The API gives software access to the WhatsApp Business account, but it does not provide an inbox UI by itself.
 
-It never uses WhatsApp Web scraping, QR login automation, browser automation, unofficial clients, personal WhatsApp account automation, session hijacking, or reverse-engineered APIs.
+If you want to receive customer messages, view conversations, and reply from a screen, you need one of these:
 
-## Status
+- your own SaaS or business app with a chat interface
+- a third-party inbox/chat platform that accepts WhatsApp Business API credentials
+- your own webhook receiver, message database, and reply UI
 
-This package is structured for npm distribution and direct MCP client usage through `npx`. The production default is local stdio transport; HTTPS is opt-in for hosted MCP deployments only.
+WBMCP is the AI/MCP tool layer. It can help an AI client perform WhatsApp Business API actions, but it is not a full inbox, CRM, support dashboard, or WhatsApp Business app replacement.
+
+## What it can do
+
+WBMCP exposes WhatsApp Business Cloud API actions as MCP tools.
+
+Main capabilities:
+
+- send text messages
+- send template messages
+- send image, document, audio, and video messages
+- send location and contact messages
+- send interactive button and list messages
+- mark messages as read
+- list and inspect message templates
+- create and delete templates
+- get and delete media
+- get and update business profile information
+- get WhatsApp Business account information
+- list phone numbers
+- validate phone numbers and template payloads
+- expose read-only account resources to MCP clients
+
+## What it does not do
+
+WBMCP does not provide:
+
+- WhatsApp Business app login
+- WhatsApp Web login
+- a customer inbox UI
+- a team inbox
+- conversation storage
+- webhook hosting
+- CRM features
+- campaign or bulk messaging software
+- a public REST API for users
+- a way to bypass Meta or WhatsApp policy limits
+
+If your product needs inbound messages and replies, build or use a chat interface that supports WhatsApp Business API credentials.
+
+## Install
+
+Run:
+
+```bash
+npx -y wbmcp@latest setup
+```
+
+The setup command saves credentials locally to:
+
+```text
+~/.config/wbmcp/config.json
+```
+
+After setup, MCP clients can start WBMCP with:
+
+```bash
+npx -y wbmcp@latest
+```
 
 ## Setup
 
-Requirements:
+The setup wizard asks for:
 
-- Node.js 20+
-- A WhatsApp Business Platform app and Cloud API access token
-- A WhatsApp Business Account ID
-- A WhatsApp phone number ID
+1. WhatsApp access token
+2. WhatsApp phone number ID
+3. WhatsApp Business Account ID
 
-For npm users, add WBMCP to Codex and save credentials locally:
+You can get these from Meta:
+
+- Meta for Developers: https://developers.facebook.com/apps/
+- WhatsApp Cloud API guide: https://developers.facebook.com/docs/whatsapp/cloud-api/get-started
+- Production System User tokens: https://business.facebook.com/settings/system-users
+
+For quick testing, use the temporary token shown in **WhatsApp > API Setup** inside your Meta app.
+
+For production, use a permanent System User token with these permissions:
+
+```text
+whatsapp_business_messaging
+whatsapp_business_management
+```
+
+Do not commit real tokens to GitHub.
+
+## OpenCode setup
+
+Add WBMCP to:
+
+```text
+~/.config/opencode/opencode.json
+```
+
+Example:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "WBMCP": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "wbmcp@latest"
+      ],
+      "enabled": true,
+      "timeout": 15000
+    }
+  }
+}
+```
+
+Then start OpenCode:
+
+```bash
+opencode
+```
+
+Example prompt:
+
+```text
+Use WBMCP and list the available WhatsApp tools.
+```
+
+Start with read-only checks before sending messages:
+
+```text
+Use WBMCP to get my WhatsApp Business account information.
+```
+
+## Codex setup
+
+Add WBMCP manually:
 
 ```bash
 codex mcp add WBMCP -- npx -y wbmcp@latest
-npx -y wbmcp@latest auth
+npx -y wbmcp@latest setup
 ```
 
-The `auth` and `setup` prompts show a short credential guide before asking for values. The guide points users to Meta for Developers, WhatsApp > API Setup, the production System User token location, and this repository setup section.
-
-Or let WBMCP write the Codex MCP config directly:
+Or let WBMCP update the Codex MCP config:
 
 ```bash
 npx -y wbmcp@latest setup codex
 ```
 
-The setup command saves credentials to `~/.config/wbmcp/config.json`. Environment variables still work and override saved config values. Do not commit real tokens. Local `npx` MCP clients communicate with WBMCP over stdio, so users do not need certificates, domains, reverse proxies, or inbound ports. WBMCP still calls Meta Graph API over outbound HTTPS.
+## Claude Desktop / Cursor-style setup
 
-For local development from GitHub:
+Use WBMCP as a local command-based MCP server:
+
+```json
+{
+  "mcpServers": {
+    "WBMCP": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "wbmcp@latest"
+      ]
+    }
+  }
+}
+```
+
+Run setup first:
+
+```bash
+npx -y wbmcp@latest setup
+```
+
+## Configuration
+
+Saved local config is recommended for normal local usage. Environment variables are also supported and override saved config values.
+
+Required:
+
+```bash
+WHATSAPP_ACCESS_TOKEN=replace-with-your-access-token
+WHATSAPP_PHONE_NUMBER_ID=replace-with-your-phone-number-id
+WHATSAPP_BUSINESS_ACCOUNT_ID=replace-with-your-business-account-id
+```
+
+Optional:
+
+```bash
+WHATSAPP_GRAPH_API_VERSION=v24.0
+MCP_ENABLE_DANGEROUS_TOOLS=false
+WHATSAPP_APP_SECRET=replace-with-your-app-secret
+```
+
+Default local transport:
+
+```bash
+MCP_TRANSPORT=stdio
+```
+
+Do not set optional secrets as empty strings. Omit unused optional variables.
+
+## Dangerous tools
+
+Read-only tools are available by default. Actions that send, delete, create, or mutate data are treated as dangerous tools.
+
+Examples of dangerous actions:
+
+- sending WhatsApp messages
+- creating templates
+- deleting templates
+- deleting media
+- updating business profile data
+- marking messages as read
+
+Enable dangerous tools only when needed:
+
+```bash
+MCP_ENABLE_DANGEROUS_TOOLS=true npx -y wbmcp@latest
+```
+
+Use these tools only with clear business authorization.
+
+## Message confirmation
+
+WBMCP returns Meta's synchronous Graph API response.
+
+For send-message tools:
+
+- success means Meta accepted the send request
+- the response includes a WhatsApp message ID when Meta provides one
+- success does not mean delivered
+- success does not mean read
+
+Delivery, read, and failed statuses are asynchronous webhook events. WBMCP does not host webhooks.
+
+For template, media, profile, and mark-as-read actions:
+
+- success means Meta accepted or applied the API request
+- if Meta rejects the action, WBMCP returns a sanitized error
+- WBMCP does not bypass Meta review, policy, quality, quota, or rate controls
+
+## Receiving messages
+
+To receive customer messages and reply from a UI, your application needs:
+
+- WhatsApp webhook configuration in Meta
+- a public webhook endpoint
+- webhook verification and signature validation
+- message storage
+- conversation state
+- a chat UI
+- logic that decides when a human or AI should reply
+
+WBMCP can be used for outbound AI actions in that system, but it is not the complete messaging backend.
+
+## Hosted HTTPS mode
+
+Most users should use the default local stdio mode.
+
+Hosted HTTPS mode is only for deployments where a remote MCP client connects to a hosted WBMCP server. It requires TLS certificate files and bearer authentication.
+
+Plain HTTP is not supported.
+
+## Security
+
+Do not expose WhatsApp credentials in logs, screenshots, GitHub issues, chat transcripts, or committed files.
+
+Recommended controls:
+
+- use least-privilege Meta System User tokens
+- rotate tokens regularly
+- keep `~/.config/wbmcp/config.json` private
+- avoid storing secrets directly in MCP client config
+- review dangerous tool calls before enabling them in production workflows
+
+Report security issues through GitHub private advisories if available:
+
+```text
+https://github.com/saravanaspar/WBMCP/security/advisories
+```
+
+If private advisories are unavailable, open a minimal GitHub issue without secrets, tokens, customer data, phone numbers, or message contents.
+
+## Development
+
+Clone:
 
 ```bash
 git clone https://github.com/saravanaspar/WBMCP.git
@@ -52,261 +311,69 @@ cd WBMCP
 npm install
 ```
 
-## Local Config and Environment Variables
+Run checks:
 
-`wbmcp auth` and `wbmcp setup codex` save this local config file:
+```bash
+npm run lint
+npm run typecheck
+npm test
+npm run build
+```
+
+Run locally:
+
+```bash
+node dist/index.js --help
+node dist/index.js setup
+node dist/index.js
+```
+
+Check package contents:
+
+```bash
+npm pack --dry-run
+```
+
+## GitHub repository metadata
+
+Recommended GitHub description:
 
 ```text
-~/.config/wbmcp/config.json
+Production-ready MCP server for WhatsApp Business Cloud API automation from AI clients.
 ```
 
-Set `WBMCP_CONFIG_FILE=/absolute/path/to/config.json` to use a different config file. Environment variables override saved config values.
+Recommended GitHub topics, comma-separated:
 
-Do not set optional secrets to empty strings in environments that load `.env` literally; omit the variable when unused.
-
-WBMCP does not throttle WhatsApp sends locally. WhatsApp Business Platform throughput, messaging tiers, and abuse controls are enforced by Meta. If Meta rejects a request for rate, policy, quality, or quota reasons, WBMCP returns the sanitized Graph API error.
-
-| Variable | Required | Default | Notes |
-| --- | --- | --- | --- |
-| `WHATSAPP_ACCESS_TOKEN` | yes | none | Meta Graph API bearer token. Never logged or exposed. |
-| `WHATSAPP_PHONE_NUMBER_ID` | yes | none | Configured WhatsApp phone number ID. |
-| `WHATSAPP_BUSINESS_ACCOUNT_ID` | yes | none | WhatsApp Business Account ID. |
-| `WHATSAPP_GRAPH_API_VERSION` | no | `v24.0` | Pinned supported stable version in this package. |
-| `WHATSAPP_APP_SECRET` | no | none | Optional reserved app secret for future webhook verification. Omit this variable unless you intentionally have a non-empty value. |
-| `MCP_LOG_LEVEL` | no | `info` | `silent`, `error`, `warn`, `info`, or `debug`. Logs go to stderr. |
-| `MCP_ENABLE_DANGEROUS_TOOLS` | no | `false` | Must be true for sends, deletes, template creation, and profile mutation. |
-| `MCP_TRANSPORT` | no | `stdio` | `stdio` for local `npx` MCP clients, or `https` for hosted MCP deployments. Plaintext `http` is rejected. |
-| `MCP_HTTPS_HOST` | hosted HTTPS only | `127.0.0.1` | Bind host for native HTTPS MCP transport. Ignored in stdio mode. |
-| `MCP_HTTPS_PORT` | hosted HTTPS only | `3443` | Native HTTPS MCP transport port. Ignored in stdio mode. |
-| `MCP_HTTPS_PATH` | hosted HTTPS only | `/mcp` | MCP Streamable HTTP endpoint path served over TLS. Ignored in stdio mode. |
-| `MCP_HTTPS_AUTH_TOKEN` | for hosted HTTPS | none | Bearer token required for HTTPS transport; minimum 32 characters. Ignored in stdio mode. |
-| `MCP_HTTPS_MAX_BODY_BYTES` | hosted HTTPS only | `1048576` | Maximum MCP HTTPS request body size. Ignored in stdio mode. |
-| `MCP_HTTPS_MAX_SESSIONS` | hosted HTTPS only | `100` | Maximum active Streamable HTTP sessions. Ignored in stdio mode. |
-| `MCP_HTTPS_SESSION_IDLE_TIMEOUT_MS` | hosted HTTPS only | `900000` | Idle session TTL before automatic close. Ignored in stdio mode. |
-| `MCP_HTTPS_CERT_FILE` | for hosted HTTPS | none | PEM certificate path for native HTTPS mode. Ignored in stdio mode. |
-| `MCP_HTTPS_KEY_FILE` | for hosted HTTPS | none | PEM private key path for native HTTPS mode. Ignored in stdio mode. |
-
-## MCP Client Configuration
-
-### Codex
-
-Primary Codex setup:
-
-```bash
-codex mcp add WBMCP -- npx -y wbmcp@latest
-npx -y wbmcp@latest auth
+```text
+mcp,model-context-protocol,whatsapp,whatsapp-business,whatsapp-cloud-api,meta-graph-api,ai-tools,opencode,codex,typescript,automation
 ```
 
-One-command helper setup:
+## Citation
 
-```bash
-npx -y wbmcp@latest setup codex
+```text
+WBMCP - MCP server for WhatsApp Business Cloud API
+GitHub: https://github.com/saravanaspar/WBMCP
+npm: https://www.npmjs.com/package/wbmcp
+Install: npx -y wbmcp@latest
 ```
 
-The helper writes this Codex entry to `~/.codex/config.toml`:
+## Keywords
 
-```toml
-[mcp_servers.WBMCP]
-command = "npx"
-args = ["-y", "wbmcp@latest"]
-startup_timeout_sec = 20
-```
+WBMCP is also described as:
 
-`codex mcp login WBMCP` is not used for the local `npx` setup because this package runs as a stdio MCP server by default. Codex reserves `mcp login` for OAuth-capable Streamable HTTP servers.
+- MCP server for WhatsApp Business
+- WhatsApp Business MCP server
+- WhatsApp Cloud API MCP server
+- Model Context Protocol server for WhatsApp Business Cloud API
+- AI tools for WhatsApp Business Cloud API
+- WhatsApp Business automation for MCP clients
 
-### Other MCP clients
+## Disclaimer
 
-Use the package directly from any MCP client with `npx`:
+WBMCP is an independent project. It is not affiliated with, endorsed by, or sponsored by Meta, WhatsApp, OpenAI, Anthropic, OpenCode, Cursor, or any other AI client vendor.
 
-```json
-{
-  "mcpServers": {
-    "WBMCP": {
-      "command": "npx",
-      "args": ["-y", "wbmcp@latest"]
-    }
-  }
-}
-```
+Use the WhatsApp Business Cloud API according to Meta's platform terms, WhatsApp Business policies, and applicable laws.
 
-Run this once before starting the MCP client. The prompt prints where to get the required Meta values before asking for them:
+## License
 
-```bash
-npx -y wbmcp@latest auth
-```
-
-For local development from a cloned checkout, build first and point the client at the local compiled entry point:
-
-```bash
-npm run build
-```
-
-```json
-{
-  "mcpServers": {
-    "WBMCP": {
-      "command": "node",
-      "args": ["/absolute/path/to/wbmcp/dist/index.js"]
-    }
-  }
-}
-```
-
-### Hosted HTTPS mode
-
-Most users should not set this for `npx` local MCP usage. Keep the default stdio transport unless WBMCP is intentionally deployed as a remote MCP endpoint for a hosted/team environment. Native HTTPS mode requires explicit TLS files and bearer authentication. Plaintext HTTP is not available in production builds.
-
-```bash
-MCP_TRANSPORT=https \
-MCP_HTTPS_AUTH_TOKEN=replace-with-at-least-32-random-characters \
-MCP_HTTPS_HOST=0.0.0.0 \
-MCP_HTTPS_PORT=3443 \
-MCP_HTTPS_CERT_FILE=/absolute/path/to/cert.pem \
-MCP_HTTPS_KEY_FILE=/absolute/path/to/key.pem \
-npm start
-```
-
-The HTTPS listener exposes only the configured MCP endpoint path, default `/mcp`, and requires `Authorization: Bearer <MCP_HTTPS_AUTH_TOKEN>`. HTTPS mode is not a user REST API; it is MCP Streamable HTTP over TLS.
-
-When manually testing Streamable HTTP with curl or another generic HTTP client, include both accepted MCP response types:
-
-```bash
-curl -i https://127.0.0.1:3443/mcp \
-  -H "Authorization: Bearer $MCP_HTTPS_AUTH_TOKEN" \
-  -H "Content-Type: application/json" \
-  -H "Accept: application/json, text/event-stream" \
-  --data '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"manual-smoke","version":"0.0.0"}}}'
-```
-
-MCP clients normally set this header automatically.
-
-## Local Development
-
-```bash
-npm run dev
-npm run build
-npm run typecheck
-npm run lint
-npm test
-```
-
-## npm Packaging
-
-The package exposes `wbmcp` as the main executable and keeps `whatsapp-business-mcp` as a compatibility alias through the `bin` field. `npm pack` and `npm publish` run `npm run build` first through the `prepack` script so the published tarball contains current compiled files under `dist/`.
-
-Check the publish contents before release:
-
-```bash
-npm run pack:dry-run
-```
-
-Publish after the package name, metadata, security review, and release checklist are final. The package metadata points to `saravanaspar/WBMCP` as the canonical source repository.
-
-```bash
-npm publish
-```
-
-## Tools
-
-See [docs/TOOLS.md](docs/TOOLS.md) for the complete implemented and deferred tool inventory.
-
-Read/account:
-
-- `whatsapp_health_check`
-- `whatsapp_get_business_account`
-- `whatsapp_get_phone_number`
-- `whatsapp_list_phone_numbers`
-- `whatsapp_get_business_profile`
-
-Profile:
-
-- `whatsapp_update_business_profile` dangerous
-
-Messaging:
-
-- `whatsapp_send_text_message` dangerous
-- `whatsapp_send_template_message` dangerous
-- `whatsapp_send_image_message` dangerous
-- `whatsapp_send_document_message` dangerous
-- `whatsapp_send_audio_message` dangerous
-- `whatsapp_send_video_message` dangerous
-- `whatsapp_send_location_message` dangerous
-- `whatsapp_send_contact_message` dangerous
-- `whatsapp_send_interactive_buttons` dangerous
-- `whatsapp_send_interactive_list` dangerous
-- `whatsapp_mark_message_as_read` dangerous
-
-Templates:
-
-- `whatsapp_list_message_templates`
-- `whatsapp_get_message_template`
-- `whatsapp_create_message_template` dangerous
-- `whatsapp_delete_message_template` dangerous
-- `whatsapp_validate_template_payload`
-
-Media:
-
-- `whatsapp_get_media`
-- `whatsapp_delete_media` dangerous
-
-Safety/admin:
-
-- `whatsapp_redact_debug_payload`
-- `whatsapp_validate_phone_number`
-- `whatsapp_explain_tool_permissions`
-- `whatsapp_list_available_tools`
-
-## Action Confirmation Semantics
-
-WBMCP returns the sanitized WhatsApp Graph API response for every action. A successful tool result means Meta accepted or applied the synchronous API request; it does not mean all downstream asynchronous effects have completed.
-
-- Message send tools return the WhatsApp message ID from Meta when the send request is accepted. Delivery, read, and failure outcomes are asynchronous and require WhatsApp webhooks, which are intentionally not hosted by this MCP server in v1.
-- Template create/delete, media delete, profile update, and mark-as-read tools return success only after the corresponding Graph API call succeeds. If Meta rejects the action, WBMCP returns a safe structured error.
-- WBMCP does not hide Meta throttling, policy, quota, or quality errors. Those errors are returned as sanitized `WhatsAppApiError` results.
-
-## Repository
-
-- Source: <https://github.com/saravanaspar/WBMCP>
-- Issues: <https://github.com/saravanaspar/WBMCP/issues>
-- README: <https://github.com/saravanaspar/WBMCP#readme>
-
-## Resources
-
-- `whatsapp://account`
-- `whatsapp://phone-number`
-- `whatsapp://business-profile`
-- `whatsapp://templates`
-
-Resources are read-only and never include access tokens.
-
-## Security Model
-
-- Environment variables are validated at startup.
-- stdio remains the default transport and is the intended local `npx` mode.
-- HTTPS support is retained for explicit hosted MCP deployments and is MCP Streamable HTTP over native TLS only, not a user REST API.
-- HTTPS transport requires bearer authentication.
-- HTTPS requests are rejected when the body exceeds `MCP_HTTPS_MAX_BODY_BYTES`.
-- HTTPS mode requires certificate and key files.
-- Dangerous tools fail closed unless `MCP_ENABLE_DANGEROUS_TOOLS=true`.
-- Tool inputs are validated with strict Zod schemas before Meta API calls.
-- Recipient phone numbers must be E.164.
-- Send tools allow one recipient per call only.
-- Access tokens, Authorization headers, app secrets, full phone numbers, message bodies, and media URL query strings are redacted from logs and safe errors.
-- Audit events are structured and emitted to stderr.
-- Meta Graph API errors are wrapped in safe `WhatsAppApiError` objects.
-- WhatsApp throughput, messaging tiers, and abuse controls are delegated to Meta; no local send throttling is applied.
-
-## Limitations
-
-- No webhook hosting.
-- No inbound message processing.
-- No dashboard or web app.
-- No REST API for users.
-- No campaign or bulk messaging features.
-- No CRM integrations.
-- No local media download.
-- No media upload from local disk in v1 because a safe path policy is not defined yet.
-
-## Roadmap
-
-Future work is tracked in [docs/ROADMAP.md](docs/ROADMAP.md), with an actionable checklist in [docs/TODO.md](docs/TODO.md).
+See [LICENSE](./LICENSE).
