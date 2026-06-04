@@ -1,0 +1,55 @@
+# Development source and tests
+src/
+tests/
+coverage/
+.vitest/
+.nyc_output/
+
+# TypeScript/build caches
+*.tsbuildinfo
+.cache/
+.turbo/
+.eslintcache
+
+# Dependency/install artifacts
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Editor/OS files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# GitHub/CI and repo-only files
+.github/
+.gitignore
+.npmignore
+AGENTS.md
+CLAUDE.md
+
+# Generated archives / local release artifacts
+*.tgz
+*.zip
+*.tar
+*.tar.gz
+
+# Misc project-local files
+tmp/
+temp/
+logs/
+*.log

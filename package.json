@@ -1,0 +1,58 @@
+{
+  "name": "wbmcp",
+  "version": "0.1.0",
+  "description": "Production-ready MCP server for the official WhatsApp Business Platform / Cloud API.",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/saravanaspar/WBMCP.git"
+  },
+  "homepage": "https://github.com/saravanaspar/WBMCP#readme",
+  "bugs": {
+    "url": "https://github.com/saravanaspar/WBMCP/issues"
+  },
+  "bin": {
+    "wbmcp": "./dist/index.js",
+    "whatsapp-business-mcp": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "docs",
+    ".env.example"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx src/index.ts",
+    "lint": "eslint .",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.test.json",
+    "prepack": "npm run build",
+    "pack:dry-run": "npm pack --dry-run"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.2",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@types/node": "^20.19.24",
+    "eslint": "^9.39.1",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.48.0",
+    "vitest": "^4.0.14"
+  },
+  "keywords": [
+    "wbmcp",
+    "mcp",
+    "model-context-protocol",
+    "whatsapp",
+    "whatsapp-business",
+    "whatsapp-cloud-api"
+  ]
+}
