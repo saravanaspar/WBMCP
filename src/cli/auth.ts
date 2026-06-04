@@ -32,7 +32,41 @@ class LinePrompter {
   }
 }
 
+export const WBMCP_SETUP_DOCS_URL = "https://github.com/saravanaspar/WBMCP#setup";
+export const META_APP_DASHBOARD_URL = "https://developers.facebook.com/apps/";
+export const META_WHATSAPP_GET_STARTED_URL = "https://developers.facebook.com/docs/whatsapp/cloud-api/get-started";
+export const META_BUSINESS_SETTINGS_SYSTEM_USERS_URL = "https://business.facebook.com/settings/system-users";
+
+export function formatCredentialSetupGuide(): string {
+  return `Before entering credentials, get these values from Meta:
+
+Project setup guide:
+${WBMCP_SETUP_DOCS_URL}
+
+1. WhatsApp access token
+   - Open Meta for Developers: ${META_APP_DASHBOARD_URL}
+   - Select your app, then open WhatsApp > API Setup.
+   - For a quick test, copy the temporary access token.
+   - For production, create a permanent System User token in Meta Business Settings:
+     ${META_BUSINESS_SETTINGS_SYSTEM_USERS_URL}
+   - Grant whatsapp_business_messaging and whatsapp_business_management permissions.
+
+2. WhatsApp phone number ID
+   - In WhatsApp > API Setup, copy Phone number ID.
+   - This is Meta's numeric ID for the phone number, not the visible phone number.
+
+3. WhatsApp Business Account ID
+   - In WhatsApp > API Setup, copy WhatsApp Business Account ID.
+   - You may also see this called WABA ID.
+
+Official Meta guide:
+${META_WHATSAPP_GET_STARTED_URL}
+
+Keep tokens private. Do not paste them into GitHub issues, chat logs, or committed files.`;
+}
+
 export async function runAuthWizard(env: NodeJS.ProcessEnv = process.env): Promise<string> {
+  output.write(`${formatCredentialSetupGuide()}\n\n`);
   const existing = await readStoredConfig(env);
   const next = await promptForConfig(existing);
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { runAuthWizard } from "./cli/auth.js";
 import { upsertCodexConfig } from "./cli/codexConfig.js";
+import { printCredentialGuide } from "./cli/credentialGuide.js";
 import { printHelp } from "./cli/help.js";
 import { loadEnv } from "./config/env.js";
 import { createServer } from "./server/createServer.js";
@@ -12,6 +13,11 @@ async function main(): Promise<void> {
 
   if (command === undefined || command === "run") {
     await runServer();
+    return;
+  }
+
+  if (command === "credentials" || command === "credential-guide" || (command === "setup" && target === "guide")) {
+    printCredentialGuide();
     return;
   }
 

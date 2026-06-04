@@ -5,12 +5,14 @@ Usage:
   wbmcp                 Start the MCP server using the configured transport (stdio by default)
   wbmcp run             Start the MCP server using the configured transport (stdio by default)
   wbmcp auth            Save WhatsApp Business Cloud API credentials locally
+  wbmcp credentials     Show where to get the required Meta/WhatsApp values
   wbmcp setup           Same as auth
   wbmcp setup codex     Save credentials and add WBMCP to Codex config
   wbmcp --help          Show this help
 
 Local MCP setup:
   codex mcp add WBMCP -- npx -y wbmcp@latest
+  npx -y wbmcp@latest credentials
   npx -y wbmcp@latest auth
 
 Hosted HTTPS mode:

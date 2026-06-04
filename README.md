@@ -34,6 +34,8 @@ codex mcp add WBMCP -- npx -y wbmcp@latest
 npx -y wbmcp@latest auth
 ```
 
+The `auth` and `setup` prompts show a short credential guide before asking for values. The guide points users to Meta for Developers, WhatsApp > API Setup, the production System User token location, and this repository setup section.
+
 Or let WBMCP write the Codex MCP config directly:
 
 ```bash
@@ -127,7 +129,7 @@ Use the package directly from any MCP client with `npx`:
 }
 ```
 
-Run this once before starting the MCP client:
+Run this once before starting the MCP client. The prompt prints where to get the required Meta values before asking for them:
 
 ```bash
 npx -y wbmcp@latest auth
@@ -305,3 +307,6 @@ Resources are read-only and never include access tokens.
 - No local media download.
 - No media upload from local disk in v1 because a safe path policy is not defined yet.
 
+## Roadmap
+
+Future work is tracked in [docs/ROADMAP.md](docs/ROADMAP.md), with an actionable checklist in [docs/TODO.md](docs/TODO.md).
