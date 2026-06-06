@@ -334,40 +334,6 @@ Check package contents:
 npm pack --dry-run
 ```
 
-## GitHub repository metadata
-
-Recommended GitHub description:
-
-```text
-Production-ready MCP server for WhatsApp Business Cloud API automation from AI clients.
-```
-
-Recommended GitHub topics, comma-separated:
-
-```text
-mcp,model-context-protocol,whatsapp,whatsapp-business,whatsapp-cloud-api,meta-graph-api,ai-tools,opencode,codex,typescript,automation
-```
-
-## Citation
-
-```text
-WBMCP - MCP server for WhatsApp Business Cloud API
-GitHub: https://github.com/saravanaspar/WBMCP
-npm: https://www.npmjs.com/package/wbmcp
-Install: npx -y wbmcp@latest
-```
-
-## Keywords
-
-WBMCP is also described as:
-
-- MCP server for WhatsApp Business
-- WhatsApp Business MCP server
-- WhatsApp Cloud API MCP server
-- Model Context Protocol server for WhatsApp Business Cloud API
-- AI tools for WhatsApp Business Cloud API
-- WhatsApp Business automation for MCP clients
-
 ## Disclaimer
 
 WBMCP is an independent project. It is not affiliated with, endorsed by, or sponsored by Meta, WhatsApp, OpenAI, Anthropic, OpenCode, Cursor, or any other AI client vendor.
