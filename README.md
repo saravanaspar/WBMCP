@@ -106,15 +106,37 @@ whatsapp_business_management
 
 Do not commit real tokens to GitHub.
 
-## OpenCode setup
+## MCP client setup
 
-Add WBMCP to:
+WBMCP can be configured in two ways:
+
+1. **Saved local config**: run `npx -y wbmcp@latest setup` once, then keep MCP client configs free of secrets. This is recommended for local development.
+2. **MCP env config**: put WhatsApp credentials in the MCP client config `env` block. This is useful for CI, containers, hosted agents, or machines where you do not want to run the setup wizard.
+
+WBMCP reads credentials from process environment variables first, then falls back to `~/.config/wbmcp/config.json`. So env values passed by an MCP client override saved setup values.
+
+Required env values:
 
 ```text
-~/.config/opencode/opencode.json
+WHATSAPP_ACCESS_TOKEN=your-meta-system-user-or-temporary-token
+WHATSAPP_PHONE_NUMBER_ID=your-meta-phone-number-id
+WHATSAPP_BUSINESS_ACCOUNT_ID=your-meta-business-account-id
 ```
 
-Example:
+Common optional env values:
+
+```text
+WHATSAPP_GRAPH_API_VERSION=v24.0
+MCP_ENABLE_DANGEROUS_TOOLS=false
+MCP_LOG_LEVEL=info
+WHATSAPP_APP_SECRET=your-meta-app-secret
+```
+
+`MCP_ENABLE_DANGEROUS_TOOLS=true` is required for tools that send, create, update, or delete data. Leave it `false` for read-only usage.
+
+### OpenCode
+
+Saved-config mode:
 
 ```json
 {
@@ -129,6 +151,33 @@ Example:
       ],
       "enabled": true,
       "timeout": 15000
+    }
+  }
+}
+```
+
+Env-config mode:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "WBMCP": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "wbmcp@latest"
+      ],
+      "enabled": true,
+      "timeout": 15000,
+      "env": {
+        "WHATSAPP_ACCESS_TOKEN": "replace-with-your-access-token",
+        "WHATSAPP_PHONE_NUMBER_ID": "replace-with-your-phone-number-id",
+        "WHATSAPP_BUSINESS_ACCOUNT_ID": "replace-with-your-business-account-id",
+        "WHATSAPP_GRAPH_API_VERSION": "v24.0",
+        "MCP_ENABLE_DANGEROUS_TOOLS": "false"
+      }
     }
   }
 }
@@ -152,13 +201,13 @@ Start with read-only checks before sending messages:
 Use WBMCP to get my WhatsApp Business account information.
 ```
 
-## Codex setup
+### Codex CLI
 
-Add WBMCP manually:
+Saved-config mode:
 
 ```bash
-codex mcp add WBMCP -- npx -y wbmcp@latest
 npx -y wbmcp@latest setup
+codex mcp add WBMCP -- npx -y wbmcp@latest
 ```
 
 Or let WBMCP update the Codex MCP config:
@@ -167,9 +216,27 @@ Or let WBMCP update the Codex MCP config:
 npx -y wbmcp@latest setup codex
 ```
 
-## Claude Desktop / Cursor-style setup
+Env-config mode for `~/.codex/config.toml`:
 
-Use WBMCP as a local command-based MCP server:
+```toml
+[mcp_servers.WBMCP]
+command = "npx"
+args = ["-y", "wbmcp@latest"]
+startup_timeout_sec = 20
+
+[mcp_servers.WBMCP.env]
+WHATSAPP_ACCESS_TOKEN = "replace-with-your-access-token"
+WHATSAPP_PHONE_NUMBER_ID = "replace-with-your-phone-number-id"
+WHATSAPP_BUSINESS_ACCOUNT_ID = "replace-with-your-business-account-id"
+WHATSAPP_GRAPH_API_VERSION = "v24.0"
+MCP_ENABLE_DANGEROUS_TOOLS = "false"
+```
+
+The `setup codex` helper writes a clean command-based config that uses the saved WBMCP config file. If you prefer env-config mode, edit `~/.codex/config.toml` manually.
+
+### Claude Desktop / Cursor-style clients
+
+Saved-config mode:
 
 ```json
 {
@@ -185,12 +252,28 @@ Use WBMCP as a local command-based MCP server:
 }
 ```
 
-Run setup first:
+Env-config mode:
 
-```bash
-npx -y wbmcp@latest setup
+```json
+{
+  "mcpServers": {
+    "WBMCP": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "wbmcp@latest"
+      ],
+      "env": {
+        "WHATSAPP_ACCESS_TOKEN": "replace-with-your-access-token",
+        "WHATSAPP_PHONE_NUMBER_ID": "replace-with-your-phone-number-id",
+        "WHATSAPP_BUSINESS_ACCOUNT_ID": "replace-with-your-business-account-id",
+        "WHATSAPP_GRAPH_API_VERSION": "v24.0",
+        "MCP_ENABLE_DANGEROUS_TOOLS": "false"
+      }
+    }
+  }
+}
 ```
-
 
 ## SDK usage
 
@@ -217,7 +300,7 @@ await whatsapp.messages.sendText({
 });
 ```
 
-Every MCP tool is exposed one-to-one under `client.tools.<tool_name>`, and typed convenience namespaces are available for `account`, `profile`, `messages`, `templates`, `media`, and `safety`. See [`docs/SDK.md`](docs/SDK.md) for full details.
+Every MCP tool is exposed one-to-one under `client.tools.<tool_name>`, and typed convenience namespaces are available for `account`, `profile`, `messages`, `templates`, `media`, `contacts`, `phoneNumbers`, `analytics`, `safety`, and `registration`. See [`docs/SDK.md`](docs/SDK.md) for full details.
 
 ## Configuration
 
