@@ -1,51 +1,42 @@
 #!/usr/bin/env node
-import { runAuthWizard } from "./cli/auth.js";
-import { upsertCodexConfig } from "./cli/codexConfig.js";
-import { printHelp } from "./cli/help.js";
-import { loadEnv } from "./config/env.js";
-import { createServer } from "./server/createServer.js";
-import { connectConfiguredTransport } from "./server/transport.js";
+import { pathToFileURL } from "node:url";
+import { runCli } from "./cli/main.js";
 import { redactSensitive } from "./security/redact.js";
 
-async function main(): Promise<void> {
-  const [command, target] = process.argv.slice(2);
+export { runCli, runConfiguredServer } from "./cli/main.js";
+export { createServer } from "./server/createServer.js";
+export { createToolContext, type ToolContextOptions } from "./server/context.js";
+export { createToolDefinitions, invokeTool, createToolCatalog } from "./server/registerTools.js";
+export {
+  createWhatsAppBusinessClient,
+  WhatsAppBusinessClient,
+  WhatsAppSdkToolError,
+  type EmptyInput,
+  type ExplainToolPermissionsInput,
+  type RedactDebugPayloadInput,
+  type ValidatePhoneNumberInput,
+  type WhatsAppBusinessClientConfig,
+  type WhatsAppBusinessClientOptions,
+  type WhatsAppSdkToolInputs,
+  type WhatsAppSdkToolMethods,
+  type WhatsAppToolName
+} from "./sdk/client.js";
+export { GraphClient, type GraphClientOptions, type RequestOptions } from "./whatsapp/graphClient.js";
+export { WhatsAppApiError, type WhatsAppApiErrorOptions } from "./whatsapp/errors.js";
+export type { JsonObject, JsonPrimitive, JsonValue, GraphPage, SendMessageResponse } from "./whatsapp/types.js";
+export type { McpToolResult, ToolFailure, ToolPayload, ToolSuccess } from "./tools/toolResult.js";
+export type { ToolCatalogEntry, ToolContext, ToolDefinition, ToolServices } from "./tools/types.js";
 
-  if (command === undefined || command === "run") {
-    await runServer();
-    return;
+if (isDirectCliInvocation(import.meta.url, process.argv[1])) {
+  try {
+    await runCli();
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(JSON.stringify({ error: redactSensitive(message) }));
+    process.exitCode = 1;
   }
-
-  if (command === "auth" || (command === "setup" && target === undefined)) {
-    const configFile = await runAuthWizard();
-    console.error(`WBMCP config saved to ${configFile}`);
-    return;
-  }
-
-  if (command === "setup" && target === "codex") {
-    const configFile = await runAuthWizard();
-    const codexConfigFile = await upsertCodexConfig();
-    console.error(`WBMCP config saved to ${configFile}`);
-    console.error(`Codex MCP config updated at ${codexConfigFile}`);
-    return;
-  }
-
-  if (command === "--help" || command === "-h" || command === "help") {
-    printHelp();
-    return;
-  }
-
-  throw new Error(`Unknown command: ${command}`);
 }
 
-async function runServer(): Promise<void> {
-  const config = loadEnv();
-  await connectConfiguredTransport(config, () => createServer(config));
-}
-
-try {
-  await main();
-} catch (error: unknown) {
-  const message = error instanceof Error ? error.message : String(error);
-  console.error(JSON.stringify({ error: redactSensitive(message) }));
-  process.exitCode = 1;
+function isDirectCliInvocation(moduleUrl: string, argvPath: string | undefined): boolean {
+  return argvPath !== undefined && moduleUrl === pathToFileURL(argvPath).href;
 }
