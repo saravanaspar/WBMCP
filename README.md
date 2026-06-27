@@ -191,6 +191,34 @@ Run setup first:
 npx -y wbmcp@latest setup
 ```
 
+
+## SDK usage
+
+WBMCP is also importable as a TypeScript SDK for backend applications that want to pass WhatsApp credentials directly instead of starting a local MCP server process.
+
+```bash
+npm install wbmcp
+```
+
+```ts
+import { createWhatsAppBusinessClient } from "wbmcp/sdk";
+
+const whatsapp = createWhatsAppBusinessClient({
+  accessToken: process.env.WHATSAPP_ACCESS_TOKEN!,
+  phoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID!,
+  businessAccountId: process.env.WHATSAPP_BUSINESS_ACCOUNT_ID!,
+  graphApiVersion: "v24.0",
+  enableDangerousTools: true
+});
+
+await whatsapp.messages.sendText({
+  recipient_phone_number: "+15551234567",
+  message_body: "Hello from WBMCP SDK"
+});
+```
+
+Every MCP tool is exposed one-to-one under `client.tools.<tool_name>`, and typed convenience namespaces are available for `account`, `profile`, `messages`, `templates`, `media`, and `safety`. See [`docs/SDK.md`](docs/SDK.md) for full details.
+
 ## Configuration
 
 Saved local config is recommended for normal local usage. Environment variables are also supported and override saved config values.
@@ -343,3 +371,8 @@ Use the WhatsApp Business Cloud API according to Meta's platform terms, WhatsApp
 ## License
 
 See [LICENSE](./LICENSE).
+
+## Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md) for release notes.
+

@@ -10,7 +10,7 @@ import { createProfileTools } from "../tools/profile.tools.js";
 import { createSafetyTools } from "../tools/safety.tools.js";
 import { createTemplateTools } from "../tools/templates.tools.js";
 import { errorResult } from "../tools/toolResult.js";
-import type { ToolContext, ToolDefinition } from "../tools/types.js";
+import type { ToolCatalogEntry, ToolContext, ToolDefinition } from "../tools/types.js";
 
 export function createToolDefinitions(): ToolDefinition[] {
   return [
@@ -23,16 +23,23 @@ export function createToolDefinitions(): ToolDefinition[] {
   ];
 }
 
-export function registerTools(server: McpServer, context: ToolContext): ToolDefinition[] {
-  const definitions = createToolDefinitions();
-  context.toolCatalog = definitions.map((tool) => ({
+export function createToolCatalog(
+  definitions: readonly ToolDefinition[],
+  enableDangerousTools: boolean
+): ToolCatalogEntry[] {
+  return definitions.map((tool) => ({
     name: tool.name,
     title: tool.title,
     description: tool.description,
     permission: tool.permission,
     dangerous: requiresDangerousTools(tool.permission),
-    enabled: !requiresDangerousTools(tool.permission) || context.config.enableDangerousTools
+    enabled: !requiresDangerousTools(tool.permission) || enableDangerousTools
   }));
+}
+
+export function registerTools(server: McpServer, context: ToolContext): ToolDefinition[] {
+  const definitions = createToolDefinitions();
+  context.toolCatalog = createToolCatalog(definitions, context.config.enableDangerousTools);
 
   for (const tool of definitions) {
     server.registerTool(
