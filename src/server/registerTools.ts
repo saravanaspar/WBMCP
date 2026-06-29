@@ -1,5 +1,5 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { DangerousToolDisabledError } from "../security/dangerousTools.js";
+import { createDangerousToolDisabledError } from "../security/dangerousTools.js";
 import { requiresDangerousTools } from "../security/permissions.js";
 import { redactSensitive } from "../security/redact.js";
 import { getToolControls, ReadOnlyToolBlockedError, ToolConfirmationRequiredError } from "../security/toolGuards.js";
@@ -121,7 +121,7 @@ export async function invokeTool(
       outcome: "blocked",
       metadata: { reason: "dangerous_tools_disabled" }
     });
-    return errorResult(new DangerousToolDisabledError(tool.name));
+    return errorResult(createDangerousToolDisabledError(tool.name));
   }
 
   if (dangerous && context.config.requireConfirmation && !controls.confirm && !controls.dryRun) {

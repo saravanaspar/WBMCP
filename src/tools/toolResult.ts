@@ -1,5 +1,4 @@
 import { ZodError } from "zod";
-import { DangerousToolDisabledError } from "../security/dangerousTools.js";
 import { ReadOnlyToolBlockedError, ToolConfirmationRequiredError } from "../security/toolGuards.js";
 import { WhatsAppApiError } from "../whatsapp/errors.js";
 import type { JsonObject, JsonValue } from "../whatsapp/types.js";
@@ -93,9 +92,9 @@ function safeError(error: unknown): JsonObject {
     };
   }
 
-  if (error instanceof DangerousToolDisabledError) {
+  if (error instanceof Error && error.name === "DangerousToolDisabledError") {
     return {
-      type: error.name,
+      type: "DangerousToolDisabledError",
       code: "dangerous_tool_disabled",
       message: error.message
     };

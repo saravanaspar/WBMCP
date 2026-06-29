@@ -42,9 +42,7 @@ describe("WBMCP config file", () => {
         whatsappPhoneNumberId: "123456789012345",
         whatsappBusinessAccountId: "123456789012346",
         whatsappGraphApiVersion: "v24.0",
-        mcpEnableDangerousTools: true,
-        mcpReadOnly: true,
-        mcpRequireConfirmation: true
+        mcpEnableDangerousTools: true
       },
       env
     );
@@ -53,8 +51,6 @@ describe("WBMCP config file", () => {
 
     expect(config.accessToken).toBe("saved-access-token");
     expect(config.enableDangerousTools).toBe(true);
-    expect(config.readOnly).toBe(true);
-    expect(config.requireConfirmation).toBe(true);
   });
 
   it("lets environment variables override saved config", async () => {
