@@ -22,16 +22,16 @@
 
 | Tool | Permission | Status |
 | --- | --- | --- |
-| `whatsapp_send_text_message` | dangerous | Implemented |
-| `whatsapp_send_template_message` | dangerous | Implemented |
-| `whatsapp_send_image_message` | dangerous | Implemented |
-| `whatsapp_send_document_message` | dangerous | Implemented |
-| `whatsapp_send_audio_message` | dangerous | Implemented |
-| `whatsapp_send_video_message` | dangerous | Implemented |
-| `whatsapp_send_location_message` | dangerous | Implemented |
-| `whatsapp_send_contact_message` | dangerous | Implemented |
-| `whatsapp_send_interactive_buttons` | dangerous | Implemented |
-| `whatsapp_send_interactive_list` | dangerous | Implemented |
+| `whatsapp_send_text_message` | dangerous | Implemented; supports `dryRun` preview |
+| `whatsapp_send_template_message` | dangerous | Implemented; supports `dryRun` preview |
+| `whatsapp_send_image_message` | dangerous | Implemented; supports `dryRun` preview |
+| `whatsapp_send_document_message` | dangerous | Implemented; supports `dryRun` preview |
+| `whatsapp_send_audio_message` | dangerous | Implemented; supports `dryRun` preview |
+| `whatsapp_send_video_message` | dangerous | Implemented; supports `dryRun` preview |
+| `whatsapp_send_location_message` | dangerous | Implemented; supports `dryRun` preview |
+| `whatsapp_send_contact_message` | dangerous | Implemented; supports `dryRun` preview |
+| `whatsapp_send_interactive_buttons` | dangerous | Implemented; supports `dryRun` preview |
+| `whatsapp_send_interactive_list` | dangerous | Implemented; supports `dryRun` preview |
 | `whatsapp_mark_message_as_read` | dangerous | Implemented |
 
 All messaging tools send to one recipient per call. Bulk sends and campaigns are intentionally not implemented.
@@ -60,7 +60,19 @@ All messaging tools send to one recipient per call. Bulk sends and campaigns are
 | `whatsapp_redact_debug_payload` | read | Implemented |
 | `whatsapp_validate_phone_number` | read | Implemented |
 | `whatsapp_explain_tool_permissions` | read | Implemented |
-| `whatsapp_list_available_tools` | read | Implemented |
+| `whatsapp_list_available_tools` | read | Implemented; includes group, enabled, confirmation, and dry-run metadata |
+| `whatsapp_get_prompt_snippets` | read | Implemented |
+
+## Safety Modes
+
+| Mode | Config | Behavior |
+| --- | --- | --- |
+| Dangerous tools disabled | `MCP_ENABLE_DANGEROUS_TOOLS=false` | Blocks send/delete/create/update/mark-read tools. |
+| Read-only | `MCP_READ_ONLY=true` | Blocks all dangerous tools even if dangerous tools are enabled. |
+| Confirmation required | `MCP_REQUIRE_CONFIRMATION=true` | Dangerous tools return `confirmation_required` until called with `confirm: true`. |
+| Dry-run preview | `dryRun: true` on send tools | Validates and returns `wouldSend` metadata without calling Meta. |
+
+Tool results use `{ ok, data, meta }` on success and `{ ok, error, meta }` on failure. Error objects include normalized `code` values when possible.
 
 ## Implemented Resources
 

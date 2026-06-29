@@ -1,9 +1,10 @@
 import { z } from "zod";
-import { httpsUrlSchema } from "../schemas/common.schemas.js";
+import { confirmationControlShape, httpsUrlSchema } from "../schemas/common.schemas.js";
 import { defineTool, type ToolDefinition } from "./types.js";
 import { successResult } from "./toolResult.js";
 
 const updateBusinessProfileShape = {
+  ...confirmationControlShape,
   about: z.string().trim().min(1).max(139).optional(),
   address: z.string().trim().min(1).max(256).optional(),
   description: z.string().trim().min(1).max(512).optional(),
@@ -36,7 +37,7 @@ const updateBusinessProfileShape = {
 const updateBusinessProfileInputSchema = z
   .object(updateBusinessProfileShape)
   .strict()
-  .refine((value) => Object.keys(value).length > 0, {
+  .refine((value) => Object.keys(value).some((key) => key !== "confirm"), {
     message: "provide at least one profile field"
   });
 
@@ -47,9 +48,13 @@ export function createProfileTools(): ToolDefinition[] {
       title: "Update WhatsApp Business Profile",
       description: "Updates externally visible WhatsApp Business profile fields. Requires dangerous tools to be enabled.",
       inputSchema: updateBusinessProfileInputSchema,
+      group: "profile",
       inputShape: updateBusinessProfileShape,
       permission: "dangerous",
-      execute: async (input, context) => successResult(await context.services.profile.updateBusinessProfile(input))
+      execute: async (input, context) => {
+        const profileInput = Object.fromEntries(Object.entries(input).filter(([key]) => key !== "confirm"));
+        return successResult(await context.services.profile.updateBusinessProfile(profileInput));
+      }
     })
   ];
 }

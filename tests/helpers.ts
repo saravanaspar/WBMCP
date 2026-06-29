@@ -18,6 +18,8 @@ export function testConfig(overrides: Partial<AppConfig> = {}): AppConfig {
     appSecret: undefined,
     logLevel: "silent",
     enableDangerousTools: false,
+    readOnly: false,
+    requireConfirmation: false,
     transport: { mode: "stdio" },
     ...overrides
   };

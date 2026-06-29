@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { realpathSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { runCli } from "./cli/main.js";
 import { redactSensitive } from "./security/redact.js";
@@ -38,5 +39,18 @@ if (isDirectCliInvocation(import.meta.url, process.argv[1])) {
 }
 
 function isDirectCliInvocation(moduleUrl: string, argvPath: string | undefined): boolean {
-  return argvPath !== undefined && moduleUrl === pathToFileURL(argvPath).href;
+  if (argvPath === undefined) {
+    return false;
+  }
+
+  const directUrl = pathToFileURL(argvPath).href;
+  if (moduleUrl === directUrl) {
+    return true;
+  }
+
+  try {
+    return moduleUrl === pathToFileURL(realpathSync(argvPath)).href;
+  } catch {
+    return false;
+  }
 }

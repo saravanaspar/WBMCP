@@ -1,9 +1,10 @@
 import { z } from "zod";
-import { graphIdSchema } from "./common.schemas.js";
+import { confirmationControlShape, graphIdSchema } from "./common.schemas.js";
 
 export const mediaIdInputSchema = z
   .object({
-    media_id: graphIdSchema
+    media_id: graphIdSchema,
+    ...confirmationControlShape
   })
   .strict();
 

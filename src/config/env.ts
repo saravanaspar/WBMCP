@@ -41,6 +41,8 @@ export interface AppConfig {
   appSecret: string | undefined;
   logLevel: LogLevel;
   enableDangerousTools: boolean;
+  readOnly: boolean;
+  requireConfirmation: boolean;
   transport: TransportConfig;
 }
 
@@ -84,6 +86,8 @@ const envSchema = z.object({
   WHATSAPP_APP_SECRET: z.string().trim().min(1).optional(),
   MCP_LOG_LEVEL: z.enum(["silent", "error", "warn", "info", "debug"]).default("info"),
   MCP_ENABLE_DANGEROUS_TOOLS: booleanFromEnv,
+  MCP_READ_ONLY: booleanFromEnv,
+  MCP_REQUIRE_CONFIRMATION: booleanFromEnv,
   MCP_TRANSPORT: z.enum(["stdio", "https"]).default("stdio"),
   MCP_HTTPS_HOST: z.string().trim().min(1).default(DEFAULT_MCP_HTTPS_HOST),
   MCP_HTTPS_PORT: portFromEnv,
@@ -113,6 +117,8 @@ export function loadEnv(env: NodeJS.ProcessEnv = process.env): AppConfig {
     appSecret: parsed.data.WHATSAPP_APP_SECRET,
     logLevel: parsed.data.MCP_LOG_LEVEL,
     enableDangerousTools: parsed.data.MCP_ENABLE_DANGEROUS_TOOLS,
+    readOnly: parsed.data.MCP_READ_ONLY,
+    requireConfirmation: parsed.data.MCP_REQUIRE_CONFIRMATION,
     transport: buildTransportConfig(parsed.data)
   };
 }

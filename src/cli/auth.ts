@@ -99,6 +99,16 @@ async function promptForConfig(existing: StoredWbmcpConfig): Promise<StoredWbmcp
     "Enable send/delete/profile mutation tools",
     existing.mcpEnableDangerousTools ?? false
   );
+  const mcpReadOnly = await booleanAnswer(
+    prompter,
+    "Run in read-only mode and block all mutation tools",
+    existing.mcpReadOnly ?? false
+  );
+  const mcpRequireConfirmation = await booleanAnswer(
+    prompter,
+    "Require confirm: true for dangerous tools",
+    existing.mcpRequireConfirmation ?? false
+  );
 
   return removeEmptyValues({
     whatsappAccessToken,
@@ -107,7 +117,9 @@ async function promptForConfig(existing: StoredWbmcpConfig): Promise<StoredWbmcp
     whatsappGraphApiVersion,
     whatsappAppSecret,
     mcpLogLevel: existing.mcpLogLevel ?? "info",
-    mcpEnableDangerousTools
+    mcpEnableDangerousTools,
+    mcpReadOnly,
+    mcpRequireConfirmation
   });
 }
 

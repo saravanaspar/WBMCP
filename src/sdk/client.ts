@@ -73,6 +73,8 @@ export interface WhatsAppBusinessClientConfig {
   readonly appSecret?: string;
   readonly logLevel?: LogLevel;
   readonly enableDangerousTools?: boolean;
+  readonly readOnly?: boolean;
+  readonly requireConfirmation?: boolean;
 }
 
 export type WhatsAppBusinessClientOptions = ToolContextOptions;
@@ -106,6 +108,7 @@ export interface WhatsAppSdkToolInputs {
   readonly whatsapp_validate_phone_number: ValidatePhoneNumberInput;
   readonly whatsapp_explain_tool_permissions: ExplainToolPermissionsInput;
   readonly whatsapp_list_available_tools: EmptyInput;
+  readonly whatsapp_get_prompt_snippets: EmptyInput;
 }
 
 export type WhatsAppToolName = keyof WhatsAppSdkToolInputs;
@@ -138,7 +141,9 @@ const sdkConfigSchema = z
     graphApiVersion: z.enum(SUPPORTED_GRAPH_API_VERSIONS).default(DEFAULT_GRAPH_API_VERSION),
     appSecret: z.string().trim().min(1).optional(),
     logLevel: z.enum(["silent", "error", "warn", "info", "debug"]).default("silent"),
-    enableDangerousTools: z.boolean().default(false)
+    enableDangerousTools: z.boolean().default(false),
+    readOnly: z.boolean().default(false),
+    requireConfirmation: z.boolean().default(false)
   })
   .strict();
 
@@ -182,7 +187,8 @@ export class WhatsAppBusinessClient {
     whatsapp_redact_debug_payload: (input) => this.callTool("whatsapp_redact_debug_payload", input),
     whatsapp_validate_phone_number: (input) => this.callTool("whatsapp_validate_phone_number", input),
     whatsapp_explain_tool_permissions: (input) => this.callTool("whatsapp_explain_tool_permissions", input),
-    whatsapp_list_available_tools: (input) => this.callTool("whatsapp_list_available_tools", input)
+    whatsapp_list_available_tools: (input) => this.callTool("whatsapp_list_available_tools", input),
+    whatsapp_get_prompt_snippets: (input) => this.callTool("whatsapp_get_prompt_snippets", input)
   };
 
   public readonly account = {
@@ -249,14 +255,15 @@ export class WhatsAppBusinessClient {
       this.callToolDataAs<JsonObject>("whatsapp_validate_phone_number", input),
     explainToolPermissions: (input: ExplainToolPermissionsInput = {}) =>
       this.callToolDataAs<JsonObject>("whatsapp_explain_tool_permissions", input),
-    listAvailableTools: () => this.callToolDataAs<JsonObject>("whatsapp_list_available_tools", {})
+    listAvailableTools: () => this.callToolDataAs<JsonObject>("whatsapp_list_available_tools", {}),
+    getPromptSnippets: () => this.callToolDataAs<JsonObject>("whatsapp_get_prompt_snippets", {})
   };
 
   public constructor(config: WhatsAppBusinessClientConfig, options: WhatsAppBusinessClientOptions = {}) {
     const appConfig = toAppConfig(config);
     this.definitions = createToolDefinitions();
     this.context = createToolContext(appConfig, options);
-    this.context.toolCatalog = createToolCatalog(this.definitions, appConfig.enableDangerousTools);
+    this.context.toolCatalog = createToolCatalog(this.definitions, appConfig);
     this.toolsByName = new Map(this.definitions.map((definition) => [definition.name, definition]));
   }
 
@@ -317,6 +324,8 @@ function toAppConfig(config: WhatsAppBusinessClientConfig): AppConfig {
     appSecret: parsed.data.appSecret,
     logLevel: parsed.data.logLevel,
     enableDangerousTools: parsed.data.enableDangerousTools,
+    readOnly: parsed.data.readOnly,
+    requireConfirmation: parsed.data.requireConfirmation,
     transport: { mode: "stdio" }
   };
 }

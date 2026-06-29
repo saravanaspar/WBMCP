@@ -3,6 +3,16 @@ import { MAX_CLIENT_MESSAGE_ID_LENGTH } from "../config/constants.js";
 
 export const emptyInputSchema = z.object({}).strict();
 
+export const confirmationControlShape = {
+  confirm: z.boolean().default(false)
+};
+
+export const sendControlShape = {
+  dryRun: z.boolean().default(false),
+  ...confirmationControlShape
+};
+
+
 export const e164PhoneNumberSchema = z
   .string()
   .trim()

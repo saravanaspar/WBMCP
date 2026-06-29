@@ -29,8 +29,10 @@ export function createSafetyTools(): ToolDefinition[] {
     defineTool({
       name: "whatsapp_redact_debug_payload",
       title: "Redact WhatsApp Debug Payload",
-      description: "Redacts secrets, phone numbers, message bodies, and sensitive URL query strings from a debug payload.",
+      description:
+        "Redacts tokens, phone numbers, message bodies, and sensitive URL query strings from a debug payload before sharing logs with humans or AI agents.",
       inputSchema: redactDebugPayloadInputSchema,
+      group: "safety",
       inputShape: redactDebugPayloadShape,
       permission: "read",
       idempotent: true,
@@ -39,8 +41,9 @@ export function createSafetyTools(): ToolDefinition[] {
     defineTool({
       name: "whatsapp_validate_phone_number",
       title: "Validate WhatsApp Phone Number",
-      description: "Validates whether a phone number is in strict E.164 format and returns only a masked representation.",
+      description: "Locally validates strict E.164 phone number format and returns only a masked representation.",
       inputSchema: validatePhoneNumberInputSchema,
+      group: "safety",
       inputShape: validatePhoneNumberShape,
       permission: "read",
       idempotent: true,
@@ -53,8 +56,10 @@ export function createSafetyTools(): ToolDefinition[] {
     defineTool({
       name: "whatsapp_explain_tool_permissions",
       title: "Explain WhatsApp Tool Permissions",
-      description: "Explains read and dangerous WhatsApp MCP tool classifications.",
+      description:
+        "Explains read versus dangerous WhatsApp MCP tool classifications, including whether a tool is enabled, requires confirmation, or supports dry-run preview.",
       inputSchema: explainToolPermissionsInputSchema,
+      group: "safety",
       inputShape: explainToolPermissionsShape,
       permission: "read",
       idempotent: true,
@@ -71,12 +76,50 @@ export function createSafetyTools(): ToolDefinition[] {
     defineTool({
       name: "whatsapp_list_available_tools",
       title: "List WhatsApp MCP Tools",
-      description: "Lists registered WhatsApp MCP tools and their permission classifications.",
+      description:
+        "Lists registered WhatsApp MCP tools with group, permission, read-only status, enabled status, confirmation requirement, and dry-run support.",
       inputSchema: emptyInputSchema,
+      group: "safety",
       inputShape: emptyInputSchema.shape,
       permission: "read",
       idempotent: true,
       execute: (_input, context) => successResult({ tools: context.toolCatalog })
+    }),
+    defineTool({
+      name: "whatsapp_get_prompt_snippets",
+      title: "Get WhatsApp MCP Prompt Snippets",
+      description:
+        "Returns recommended system-prompt snippets that help AI agents use WBMCP safely with previews, confirmations, and template fallback behavior.",
+      inputSchema: emptyInputSchema,
+      group: "safety",
+      inputShape: emptyInputSchema.shape,
+      permission: "read",
+      idempotent: true,
+      execute: () =>
+        successResult({
+          snippets: [
+            {
+              name: "safe_preview_first",
+              text:
+                "Before sending any WhatsApp message, call the send tool with dryRun: true and show the preview to the operator unless they already gave explicit approval."
+            },
+            {
+              name: "dangerous_confirmation",
+              text:
+                "For tools that send, delete, register, or update externally visible WhatsApp state, only pass confirm: true after explicit operator approval."
+            },
+            {
+              name: "cold_contact_template",
+              text:
+                "If a contact may be outside the 24-hour customer-service window, prefer an approved template message instead of a free-form text message."
+            },
+            {
+              name: "protect_sensitive_data",
+              text:
+                "Never reveal access tokens, app secrets, full phone numbers, or raw webhook payloads in user-facing output. Use the redaction tool before sharing diagnostics."
+            }
+          ]
+        })
     })
   ];
 }

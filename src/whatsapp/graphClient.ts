@@ -71,7 +71,7 @@ export class GraphClient {
         if (!retryable || attempt === this.maxRetries) {
           throw error;
         }
-        await sleep(100 * 2 ** attempt);
+        await sleep(retryDelayMs(error, attempt));
       }
     }
 
@@ -209,6 +209,16 @@ function parseRetryAfterSeconds(headerValue: string | null): number | undefined 
 
 function isRetryableError(error: unknown): boolean {
   return error instanceof WhatsAppApiError && error.retryable;
+}
+
+function retryDelayMs(error: unknown, attempt: number): number {
+  if (error instanceof WhatsAppApiError && error.retryAfterSeconds !== undefined) {
+    return error.retryAfterSeconds * 1000;
+  }
+
+  const baseDelayMs = 100 * 2 ** attempt;
+  const jitterMs = Math.floor(Math.random() * 50);
+  return baseDelayMs + jitterMs;
 }
 
 function isRetrySafe(method: HttpMethod): boolean {

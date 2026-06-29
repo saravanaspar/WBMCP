@@ -12,6 +12,8 @@ export interface StoredWbmcpConfig {
   whatsappAppSecret?: string | undefined;
   mcpLogLevel?: string | undefined;
   mcpEnableDangerousTools?: boolean | undefined;
+  mcpReadOnly?: boolean | undefined;
+  mcpRequireConfirmation?: boolean | undefined;
 }
 
 const storedConfigSchema = z
@@ -22,7 +24,9 @@ const storedConfigSchema = z
     whatsappGraphApiVersion: z.string().trim().min(1).optional(),
     whatsappAppSecret: z.string().trim().min(1).optional(),
     mcpLogLevel: z.string().trim().min(1).optional(),
-    mcpEnableDangerousTools: z.boolean().optional()
+    mcpEnableDangerousTools: z.boolean().optional(),
+    mcpReadOnly: z.boolean().optional(),
+    mcpRequireConfirmation: z.boolean().optional()
   })
   .strict();
 
@@ -99,6 +103,12 @@ export function storedConfigToEnv(config: StoredWbmcpConfig): Record<string, str
 
   if (config.mcpEnableDangerousTools !== undefined) {
     env.MCP_ENABLE_DANGEROUS_TOOLS = config.mcpEnableDangerousTools ? "true" : "false";
+  }
+  if (config.mcpReadOnly !== undefined) {
+    env.MCP_READ_ONLY = config.mcpReadOnly ? "true" : "false";
+  }
+  if (config.mcpRequireConfirmation !== undefined) {
+    env.MCP_REQUIRE_CONFIRMATION = config.mcpRequireConfirmation ? "true" : "false";
   }
 
   return env;

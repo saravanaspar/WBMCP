@@ -9,14 +9,17 @@ import {
 } from "../config/constants.js";
 import {
   clientMessageIdSchema,
+  confirmationControlShape,
   e164PhoneNumberSchema,
   graphIdSchema,
-  mediaUrlSchema
+  mediaUrlSchema,
+  sendControlShape
 } from "./common.schemas.js";
 
 const baseSendShape = {
   recipient_phone_number: e164PhoneNumberSchema,
-  client_message_id: clientMessageIdSchema
+  client_message_id: clientMessageIdSchema,
+  ...sendControlShape
 };
 
 export const sendTextMessageInputSchema = z
@@ -131,7 +134,8 @@ export const sendInteractiveListInputSchema = z
 
 export const markMessageAsReadInputSchema = z
   .object({
-    message_id: graphIdSchema
+    message_id: graphIdSchema,
+    ...confirmationControlShape
   })
   .strict();
 

@@ -300,7 +300,7 @@ await whatsapp.messages.sendText({
 });
 ```
 
-Every MCP tool is exposed one-to-one under `client.tools.<tool_name>`, and typed convenience namespaces are available for `account`, `profile`, `messages`, `templates`, `media`, `contacts`, `phoneNumbers`, `analytics`, `safety`, and `registration`. See [`docs/SDK.md`](docs/SDK.md) for full details.
+Every MCP tool is exposed one-to-one under `client.tools.<tool_name>`, and typed convenience namespaces are available for `account`, `profile`, `messages`, `templates`, `media`, and `safety`. See [`docs/SDK.md`](docs/SDK.md) for full details.
 
 ## Configuration
 
@@ -319,6 +319,8 @@ Optional:
 ```bash
 WHATSAPP_GRAPH_API_VERSION=v24.0
 MCP_ENABLE_DANGEROUS_TOOLS=false
+MCP_READ_ONLY=false
+MCP_REQUIRE_CONFIRMATION=false
 WHATSAPP_APP_SECRET=replace-with-your-app-secret
 ```
 
@@ -351,7 +353,41 @@ MCP_ENABLE_DANGEROUS_TOOLS=true npx -y wbmcp@latest
 
 Use these tools only with clear business authorization.
 
-## Message confirmation
+### Read-only mode
+
+Use read-only mode when testing, auditing, or connecting an MCP client that must not mutate WhatsApp state:
+
+```bash
+MCP_READ_ONLY=true npx -y wbmcp@latest
+```
+
+In read-only mode, list/get/validate/safety tools remain available, but send, delete, create, register, mark-read, and profile-update tools are blocked even if dangerous tools are enabled.
+
+### Confirmation mode
+
+Use confirmation mode when you want dangerous tools to require an explicit second call with `confirm: true`:
+
+```bash
+MCP_ENABLE_DANGEROUS_TOOLS=true MCP_REQUIRE_CONFIRMATION=true npx -y wbmcp@latest
+```
+
+A dangerous call without confirmation returns a structured `confirmation_required` error instead of calling Meta.
+
+### Dry-run previews
+
+Send tools support `dryRun: true` so agents can preview the intended message without calling Meta:
+
+```json
+{
+  "recipient_phone_number": "+15551234567",
+  "message_body": "Hello from WBMCP",
+  "dryRun": true
+}
+```
+
+Dry-run responses use the same `{ ok, data, meta }` shape as other tools and include `meta.mode = "dry_run"`.
+
+## Message results
 
 WBMCP returns Meta's synchronous Graph API response.
 

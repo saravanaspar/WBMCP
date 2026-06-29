@@ -9,6 +9,7 @@ export function createMediaTools(): ToolDefinition[] {
       title: "Get WhatsApp Media",
       description: "Reads WhatsApp media metadata by Meta media ID. This does not download media to disk.",
       inputSchema: mediaIdInputSchema,
+      group: "media",
       inputShape: mediaIdInputSchema.shape,
       permission: "read",
       idempotent: true,
@@ -19,6 +20,7 @@ export function createMediaTools(): ToolDefinition[] {
       title: "Delete WhatsApp Media",
       description: "Deletes uploaded WhatsApp media by Meta media ID. Requires dangerous tools to be enabled.",
       inputSchema: mediaIdInputSchema,
+      group: "media",
       inputShape: mediaIdInputSchema.shape,
       permission: "dangerous",
       execute: async (input, context) => successResult(await context.services.media.deleteMedia(input.media_id))

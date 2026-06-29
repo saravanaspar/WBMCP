@@ -4,6 +4,25 @@ All notable changes to WBMCP are documented here.
 
 This project follows semantic versioning for npm releases.
 
+## [0.1.2] - 2026-06-29
+
+### Added
+
+* Added `dryRun: true` preview support for all send-message tools.
+* Added `MCP_REQUIRE_CONFIRMATION=true` safety mode for dangerous tools, requiring `confirm: true` before mutation calls.
+* Added `MCP_READ_ONLY=true` mode to block all dangerous tools while keeping read/safety tools available.
+* Added normalized tool error codes such as `invalid_credentials`, `rate_limited`, `invalid_phone_number`, `dangerous_tool_disabled`, and `confirmation_required`.
+* Added richer tool catalog metadata: group, read-only status, enabled status, confirmation requirement, and dry-run support.
+* Added prompt-snippet safety tool for agent instructions.
+* Added SDK/MCP safety parity tests for dry-run, confirmation, read-only mode, and validation failures.
+
+### Changed
+
+* Bumped package version from `0.1.1` to `0.1.2`.
+* Improved send-tool descriptions so AI agents know when to preview, confirm, or use templates.
+* Improved retry delay behavior for safe GET retries by respecting `Retry-After` and adding jitter.
+* Fixed npm binary execution when launched through package-manager symlinks such as `node_modules/.bin/wbmcp`.
+
 ## [0.1.1] - 2026-06-27
 
 ### Added

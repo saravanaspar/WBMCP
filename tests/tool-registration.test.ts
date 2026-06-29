@@ -29,7 +29,8 @@ const expectedTools = [
   "whatsapp_redact_debug_payload",
   "whatsapp_validate_phone_number",
   "whatsapp_explain_tool_permissions",
-  "whatsapp_list_available_tools"
+  "whatsapp_list_available_tools",
+  "whatsapp_get_prompt_snippets"
 ];
 
 describe("tool registration", () => {
@@ -42,5 +43,12 @@ describe("tool registration", () => {
     const tools = createToolDefinitions();
     expect(tools.find((tool) => tool.name === "whatsapp_send_text_message")?.permission).toBe("dangerous");
     expect(tools.find((tool) => tool.name === "whatsapp_delete_message_template")?.permission).toBe("dangerous");
+  });
+
+  it("marks send tools as dry-run capable and assigns every tool to a group", () => {
+    const tools = createToolDefinitions();
+    expect(tools.every((tool) => typeof tool.group === "string" && tool.group.length > 0)).toBe(true);
+    expect(tools.find((tool) => tool.name === "whatsapp_send_text_message")?.supportsDryRun).toBe(true);
+    expect(tools.find((tool) => tool.name === "whatsapp_list_message_templates")?.supportsDryRun).toBeUndefined();
   });
 });
