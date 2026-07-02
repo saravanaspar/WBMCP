@@ -5,6 +5,23 @@ import {
 } from "../config/constants.js";
 import type { AppConfig, LogLevel } from "../config/env.js";
 import { ConfigValidationError } from "../config/env.js";
+import type { analyticsInputSchema } from "../schemas/analytics.schemas.js";
+import type {
+  catalogIdInputSchema,
+  createCatalogProductInputSchema,
+  listCatalogProductsInputSchema,
+  listCommerceCatalogsInputSchema,
+  productIdInputSchema,
+  updateCatalogProductInputSchema
+} from "../schemas/commerce.schemas.js";
+import type {
+  createFlowInputSchema,
+  flowIdInputSchema,
+  flowJsonInputSchema,
+  listFlowsInputSchema,
+  sendFlowMessageInputSchema,
+  updateFlowInputSchema
+} from "../schemas/flow.schemas.js";
 import type { MediaIdInput } from "../schemas/media.schemas.js";
 import type {
   markMessageAsReadInputSchema,
@@ -15,9 +32,22 @@ import type {
   sendInteractiveButtonsInputSchema,
   sendInteractiveListInputSchema,
   sendLocationMessageInputSchema,
+  sendProductListMessageInputSchema,
+  sendProductMessageInputSchema,
+  sendReactionMessageInputSchema,
+  sendStickerMessageInputSchema,
   sendTextMessageInputSchema,
   sendVideoMessageInputSchema
 } from "../schemas/message.schemas.js";
+import type {
+  deregisterPhoneNumberInputSchema,
+  phoneNumberIdInputSchema,
+  registerPhoneNumberInputSchema,
+  requestVerificationCodeInputSchema,
+  twoStepPinInputSchema,
+  updatePhoneNumberSettingsInputSchema,
+  verifyCodeInputSchema
+} from "../schemas/phone.schemas.js";
 import type {
   createMessageTemplateInputSchema,
   deleteMessageTemplateInputSchema,
@@ -26,6 +56,7 @@ import type {
   sendTemplateMessageInputSchema,
   validateTemplatePayloadInputSchema
 } from "../schemas/template.schemas.js";
+import type { webhookAppControlInputSchema } from "../schemas/webhook.schemas.js";
 import { createToolContext, type ToolContextOptions } from "../server/context.js";
 import { createToolCatalog, createToolDefinitions, invokeTool } from "../server/registerTools.js";
 import type { McpToolResult, ToolPayload } from "../tools/toolResult.js";
@@ -40,10 +71,14 @@ type SendImageMessageSdkInput = z.input<typeof sendImageMessageInputSchema>;
 type SendDocumentMessageSdkInput = z.input<typeof sendDocumentMessageInputSchema>;
 type SendAudioMessageSdkInput = z.input<typeof sendAudioMessageInputSchema>;
 type SendVideoMessageSdkInput = z.input<typeof sendVideoMessageInputSchema>;
+type SendReactionMessageSdkInput = z.input<typeof sendReactionMessageInputSchema>;
+type SendStickerMessageSdkInput = z.input<typeof sendStickerMessageInputSchema>;
 type SendLocationMessageSdkInput = z.input<typeof sendLocationMessageInputSchema>;
 type SendContactMessageSdkInput = z.input<typeof sendContactMessageInputSchema>;
 type SendInteractiveButtonsSdkInput = z.input<typeof sendInteractiveButtonsInputSchema>;
 type SendInteractiveListSdkInput = z.input<typeof sendInteractiveListInputSchema>;
+type SendProductMessageSdkInput = z.input<typeof sendProductMessageInputSchema>;
+type SendProductListMessageSdkInput = z.input<typeof sendProductListMessageInputSchema>;
 type MarkMessageAsReadSdkInput = z.input<typeof markMessageAsReadInputSchema>;
 type SendTemplateMessageSdkInput = z.input<typeof sendTemplateMessageInputSchema>;
 type CreateMessageTemplateSdkInput = z.input<typeof createMessageTemplateInputSchema>;
@@ -51,6 +86,27 @@ type DeleteMessageTemplateSdkInput = z.input<typeof deleteMessageTemplateInputSc
 type GetMessageTemplateSdkInput = z.input<typeof getMessageTemplateInputSchema>;
 type ListMessageTemplatesSdkInput = z.input<typeof listMessageTemplatesInputSchema>;
 type ValidateTemplatePayloadSdkInput = z.input<typeof validateTemplatePayloadInputSchema>;
+type ListCommerceCatalogsSdkInput = z.input<typeof listCommerceCatalogsInputSchema>;
+type CatalogIdSdkInput = z.input<typeof catalogIdInputSchema>;
+type ListCatalogProductsSdkInput = z.input<typeof listCatalogProductsInputSchema>;
+type ProductIdSdkInput = z.input<typeof productIdInputSchema>;
+type CreateCatalogProductSdkInput = z.input<typeof createCatalogProductInputSchema>;
+type UpdateCatalogProductSdkInput = z.input<typeof updateCatalogProductInputSchema>;
+type RequestVerificationCodeSdkInput = z.input<typeof requestVerificationCodeInputSchema>;
+type VerifyCodeSdkInput = z.input<typeof verifyCodeInputSchema>;
+type RegisterPhoneNumberSdkInput = z.input<typeof registerPhoneNumberInputSchema>;
+type DeregisterPhoneNumberSdkInput = z.input<typeof deregisterPhoneNumberInputSchema>;
+type PhoneNumberIdSdkInput = z.input<typeof phoneNumberIdInputSchema>;
+type TwoStepPinSdkInput = z.input<typeof twoStepPinInputSchema>;
+type UpdatePhoneNumberSettingsSdkInput = z.input<typeof updatePhoneNumberSettingsInputSchema>;
+type WebhookAppControlSdkInput = z.input<typeof webhookAppControlInputSchema>;
+type ListFlowsSdkInput = z.input<typeof listFlowsInputSchema>;
+type FlowIdSdkInput = z.input<typeof flowIdInputSchema>;
+type CreateFlowSdkInput = z.input<typeof createFlowInputSchema>;
+type UpdateFlowSdkInput = z.input<typeof updateFlowInputSchema>;
+type FlowJsonSdkInput = z.input<typeof flowJsonInputSchema>;
+type SendFlowMessageSdkInput = z.input<typeof sendFlowMessageInputSchema>;
+type AnalyticsSdkInput = z.input<typeof analyticsInputSchema>;
 
 
 export interface RedactDebugPayloadInput {
@@ -63,6 +119,23 @@ export interface ValidatePhoneNumberInput {
 
 export interface ExplainToolPermissionsInput {
   readonly tool_name?: string;
+}
+
+export interface AgentToolOptions {
+  readonly groups?: readonly ToolCatalogEntry["group"][];
+  readonly includeDangerous?: boolean;
+  readonly enabledOnly?: boolean;
+  readonly descriptions?: "full" | "compact";
+}
+
+export interface AgentToolDescriptor extends JsonObject {
+  readonly name: string;
+  readonly description: string;
+  readonly permission: ToolCatalogEntry["permission"];
+  readonly group: ToolCatalogEntry["group"];
+  readonly enabled: boolean;
+  readonly dangerous: boolean;
+  readonly dryRunSupported: boolean;
 }
 
 export interface WhatsAppBusinessClientConfig {
@@ -92,10 +165,15 @@ export interface WhatsAppSdkToolInputs {
   readonly whatsapp_send_document_message: SendDocumentMessageSdkInput;
   readonly whatsapp_send_audio_message: SendAudioMessageSdkInput;
   readonly whatsapp_send_video_message: SendVideoMessageSdkInput;
+  readonly whatsapp_send_reaction_message: SendReactionMessageSdkInput;
+  readonly whatsapp_send_sticker_message: SendStickerMessageSdkInput;
   readonly whatsapp_send_location_message: SendLocationMessageSdkInput;
   readonly whatsapp_send_contact_message: SendContactMessageSdkInput;
   readonly whatsapp_send_interactive_buttons: SendInteractiveButtonsSdkInput;
   readonly whatsapp_send_interactive_list: SendInteractiveListSdkInput;
+  readonly whatsapp_send_product_message: SendProductMessageSdkInput;
+  readonly whatsapp_send_product_list_message: SendProductListMessageSdkInput;
+  readonly whatsapp_send_flow_message: SendFlowMessageSdkInput;
   readonly whatsapp_mark_message_as_read: MarkMessageAsReadSdkInput;
   readonly whatsapp_list_message_templates: ListMessageTemplatesSdkInput;
   readonly whatsapp_get_message_template: GetMessageTemplateSdkInput;
@@ -104,6 +182,33 @@ export interface WhatsAppSdkToolInputs {
   readonly whatsapp_validate_template_payload: ValidateTemplatePayloadSdkInput;
   readonly whatsapp_get_media: MediaIdInput;
   readonly whatsapp_delete_media: MediaIdInput;
+  readonly whatsapp_list_catalogs: ListCommerceCatalogsSdkInput;
+  readonly whatsapp_get_catalog: CatalogIdSdkInput;
+  readonly whatsapp_list_catalog_products: ListCatalogProductsSdkInput;
+  readonly whatsapp_get_catalog_product: ProductIdSdkInput;
+  readonly whatsapp_create_catalog_product: CreateCatalogProductSdkInput;
+  readonly whatsapp_update_catalog_product: UpdateCatalogProductSdkInput;
+  readonly whatsapp_delete_catalog_product: ProductIdSdkInput;
+  readonly whatsapp_request_phone_verification_code: RequestVerificationCodeSdkInput;
+  readonly whatsapp_verify_phone_code: VerifyCodeSdkInput;
+  readonly whatsapp_register_phone_number: RegisterPhoneNumberSdkInput;
+  readonly whatsapp_deregister_phone_number: DeregisterPhoneNumberSdkInput;
+  readonly whatsapp_set_two_step_pin: TwoStepPinSdkInput;
+  readonly whatsapp_get_phone_number_settings: PhoneNumberIdSdkInput;
+  readonly whatsapp_update_phone_number_settings: UpdatePhoneNumberSettingsSdkInput;
+  readonly whatsapp_list_subscribed_apps: WebhookAppControlSdkInput;
+  readonly whatsapp_subscribe_app: WebhookAppControlSdkInput;
+  readonly whatsapp_unsubscribe_app: WebhookAppControlSdkInput;
+  readonly whatsapp_list_flows: ListFlowsSdkInput;
+  readonly whatsapp_get_flow: FlowIdSdkInput;
+  readonly whatsapp_create_flow: CreateFlowSdkInput;
+  readonly whatsapp_update_flow: UpdateFlowSdkInput;
+  readonly whatsapp_update_flow_json: FlowJsonSdkInput;
+  readonly whatsapp_publish_flow: FlowIdSdkInput;
+  readonly whatsapp_deprecate_flow: FlowIdSdkInput;
+  readonly whatsapp_delete_flow: FlowIdSdkInput;
+  readonly whatsapp_get_conversation_analytics: AnalyticsSdkInput;
+  readonly whatsapp_get_template_analytics: AnalyticsSdkInput;
   readonly whatsapp_redact_debug_payload: RedactDebugPayloadInput;
   readonly whatsapp_validate_phone_number: ValidatePhoneNumberInput;
   readonly whatsapp_explain_tool_permissions: ExplainToolPermissionsInput;
@@ -159,37 +264,7 @@ export class WhatsAppBusinessClient {
   private readonly definitions: readonly ToolDefinition[];
   private readonly toolsByName: ReadonlyMap<string, ToolDefinition>;
 
-  public readonly tools: WhatsAppSdkToolMethods = {
-    whatsapp_health_check: (input) => this.callTool("whatsapp_health_check", input),
-    whatsapp_get_business_account: (input) => this.callTool("whatsapp_get_business_account", input),
-    whatsapp_get_phone_number: (input) => this.callTool("whatsapp_get_phone_number", input),
-    whatsapp_list_phone_numbers: (input) => this.callTool("whatsapp_list_phone_numbers", input),
-    whatsapp_get_business_profile: (input) => this.callTool("whatsapp_get_business_profile", input),
-    whatsapp_update_business_profile: (input) => this.callTool("whatsapp_update_business_profile", input),
-    whatsapp_send_text_message: (input) => this.callTool("whatsapp_send_text_message", input),
-    whatsapp_send_template_message: (input) => this.callTool("whatsapp_send_template_message", input),
-    whatsapp_send_image_message: (input) => this.callTool("whatsapp_send_image_message", input),
-    whatsapp_send_document_message: (input) => this.callTool("whatsapp_send_document_message", input),
-    whatsapp_send_audio_message: (input) => this.callTool("whatsapp_send_audio_message", input),
-    whatsapp_send_video_message: (input) => this.callTool("whatsapp_send_video_message", input),
-    whatsapp_send_location_message: (input) => this.callTool("whatsapp_send_location_message", input),
-    whatsapp_send_contact_message: (input) => this.callTool("whatsapp_send_contact_message", input),
-    whatsapp_send_interactive_buttons: (input) => this.callTool("whatsapp_send_interactive_buttons", input),
-    whatsapp_send_interactive_list: (input) => this.callTool("whatsapp_send_interactive_list", input),
-    whatsapp_mark_message_as_read: (input) => this.callTool("whatsapp_mark_message_as_read", input),
-    whatsapp_list_message_templates: (input) => this.callTool("whatsapp_list_message_templates", input),
-    whatsapp_get_message_template: (input) => this.callTool("whatsapp_get_message_template", input),
-    whatsapp_create_message_template: (input) => this.callTool("whatsapp_create_message_template", input),
-    whatsapp_delete_message_template: (input) => this.callTool("whatsapp_delete_message_template", input),
-    whatsapp_validate_template_payload: (input) => this.callTool("whatsapp_validate_template_payload", input),
-    whatsapp_get_media: (input) => this.callTool("whatsapp_get_media", input),
-    whatsapp_delete_media: (input) => this.callTool("whatsapp_delete_media", input),
-    whatsapp_redact_debug_payload: (input) => this.callTool("whatsapp_redact_debug_payload", input),
-    whatsapp_validate_phone_number: (input) => this.callTool("whatsapp_validate_phone_number", input),
-    whatsapp_explain_tool_permissions: (input) => this.callTool("whatsapp_explain_tool_permissions", input),
-    whatsapp_list_available_tools: (input) => this.callTool("whatsapp_list_available_tools", input),
-    whatsapp_get_prompt_snippets: (input) => this.callTool("whatsapp_get_prompt_snippets", input)
-  };
+  public readonly tools: WhatsAppSdkToolMethods;
 
   public readonly account = {
     healthCheck: () => this.callToolDataAs<JsonObject>("whatsapp_health_check", {}),
@@ -248,6 +323,12 @@ export class WhatsAppBusinessClient {
     deleteMedia: (input: MediaIdInput) => this.callToolDataAs<JsonObject>("whatsapp_delete_media", input)
   };
 
+  public readonly agent = {
+    tools: (options: AgentToolOptions = {}) => this.toolsForAgent(options),
+    capabilities: () => this.capabilities(),
+    systemPrompt: () => this.systemPrompt()
+  };
+
   public readonly safety = {
     redactDebugPayload: (input: RedactDebugPayloadInput) =>
       this.callToolDataAs<JsonObject>("whatsapp_redact_debug_payload", input),
@@ -265,6 +346,7 @@ export class WhatsAppBusinessClient {
     this.context = createToolContext(appConfig, options);
     this.context.toolCatalog = createToolCatalog(this.definitions, appConfig);
     this.toolsByName = new Map(this.definitions.map((definition) => [definition.name, definition]));
+    this.tools = createSdkToolMethods(this);
   }
 
   public listTools(): ToolCatalogEntry[] {
@@ -288,6 +370,13 @@ export class WhatsAppBusinessClient {
     return extractToolPayload(result);
   }
 
+  public async tryCallTool<TName extends WhatsAppToolName>(
+    name: TName,
+    input: WhatsAppSdkToolInputs[TName]
+  ): Promise<ToolPayload> {
+    return this.callTool(name, input);
+  }
+
   public async callToolData<TName extends WhatsAppToolName>(
     name: TName,
     input: WhatsAppSdkToolInputs[TName]
@@ -306,6 +395,56 @@ export class WhatsAppBusinessClient {
   ): Promise<TData> {
     return (await this.callToolData(name, input)) as TData;
   }
+
+  public toolsForAgent(options: AgentToolOptions = {}): AgentToolDescriptor[] {
+    const groups = new Set(options.groups ?? []);
+    return this.context.toolCatalog
+      .filter((tool) => groups.size === 0 || groups.has(tool.group))
+      .filter((tool) => options.includeDangerous === true || !tool.dangerous)
+      .filter((tool) => options.enabledOnly !== true || tool.enabled)
+      .map((tool) => ({
+        name: tool.name,
+        description: options.descriptions === "compact" ? compactDescription(tool) : tool.description,
+        permission: tool.permission,
+        group: tool.group,
+        enabled: tool.enabled,
+        dangerous: tool.dangerous,
+        dryRunSupported: tool.dryRunSupported
+      }));
+  }
+
+  public capabilities(): JsonObject {
+    return {
+      tools: this.context.toolCatalog.length,
+      enabled_tools: this.context.toolCatalog.filter((tool) => tool.enabled).length,
+      dangerous_tools: this.context.toolCatalog.filter((tool) => tool.dangerous).length,
+      groups: [...new Set(this.context.toolCatalog.map((tool) => tool.group))],
+      safety: {
+        dangerous_tools_enabled: this.context.config.enableDangerousTools,
+        read_only: this.context.config.readOnly,
+        confirmation_required: this.context.config.requireConfirmation
+      }
+    };
+  }
+
+  public systemPrompt(): string {
+    const safety = this.context.config;
+    return [
+      "Use WhatsApp Business tools conservatively.",
+      "Prefer read-only checks before sending, deleting, publishing, or updating external WhatsApp state.",
+      "Use dryRun previews for send tools before final sends.",
+      safety.requireConfirmation
+        ? "Pass confirm: true only after explicit operator approval."
+        : "Ask for explicit operator approval before dangerous actions.",
+      "Never reveal access tokens, app secrets, full phone numbers, or raw private message bodies."
+    ].join(" ");
+  }
+}
+
+function compactDescription(tool: ToolCatalogEntry): string {
+  const mode = tool.dangerous ? "Mutates WhatsApp state" : "Reads WhatsApp state";
+  const dryRun = tool.dryRunSupported ? " Supports dryRun." : "";
+  return `${mode}: ${tool.title}.${dryRun}`;
 }
 
 function toAppConfig(config: WhatsAppBusinessClientConfig): AppConfig {
@@ -328,6 +467,21 @@ function toAppConfig(config: WhatsAppBusinessClientConfig): AppConfig {
     requireConfirmation: parsed.data.requireConfirmation,
     transport: { mode: "stdio" }
   };
+}
+
+function createSdkToolMethods(client: WhatsAppBusinessClient): WhatsAppSdkToolMethods {
+  return new Proxy(
+    {},
+    {
+      get(_target, property) {
+        if (typeof property !== "string" || !client.getToolDefinition(property)) {
+          return undefined;
+        }
+
+        return (input: unknown) => client.callTool(property as WhatsAppToolName, input as WhatsAppSdkToolInputs[WhatsAppToolName]);
+      }
+    }
+  ) as WhatsAppSdkToolMethods;
 }
 
 function extractToolPayload(result: McpToolResult): ToolPayload {

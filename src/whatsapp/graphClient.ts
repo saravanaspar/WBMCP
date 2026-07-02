@@ -1,3 +1,4 @@
+import { createHmac } from "node:crypto";
 import {
   DEFAULT_HTTP_TIMEOUT_MS,
   DEFAULT_MAX_RETRIES,
@@ -14,6 +15,7 @@ type HttpMethod = "GET" | "POST" | "DELETE";
 export interface GraphClientOptions {
   readonly accessToken: string;
   readonly graphApiVersion: string;
+  readonly appSecret?: string | undefined;
   readonly timeoutMs?: number;
   readonly maxRetries?: number;
   readonly fetchFn?: FetchLike;
@@ -155,8 +157,15 @@ export class GraphClient {
         url.searchParams.set(key, String(value));
       }
     }
+    if (this.options.appSecret) {
+      url.searchParams.set("appsecret_proof", appSecretProof(this.options.accessToken, this.options.appSecret));
+    }
     return url;
   }
+}
+
+function appSecretProof(accessToken: string, appSecret: string): string {
+  return createHmac("sha256", appSecret).update(accessToken).digest("hex");
 }
 
 async function parseJsonResponse(response: Response): Promise<JsonObject> {

@@ -2,6 +2,8 @@ export {
   createWhatsAppBusinessClient,
   WhatsAppBusinessClient,
   WhatsAppSdkToolError,
+  type AgentToolDescriptor,
+  type AgentToolOptions,
   type EmptyInput,
   type ExplainToolPermissionsInput,
   type ListPhoneNumbersInput,

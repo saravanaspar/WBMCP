@@ -2,16 +2,32 @@ import type { z } from "zod";
 import type { AppConfig } from "../config/env.js";
 import type { AuditLogger } from "../security/audit.js";
 import { requiresDangerousTools, type ToolPermission } from "../security/permissions.js";
+import type { AnalyticsService } from "../whatsapp/services/analytics.service.js";
 import type { AccountService } from "../whatsapp/services/account.service.js";
+import type { CommerceService } from "../whatsapp/services/commerce.service.js";
+import type { FlowsService } from "../whatsapp/services/flows.service.js";
 import type { MediaService } from "../whatsapp/services/media.service.js";
 import type { MessagesService } from "../whatsapp/services/messages.service.js";
+import type { PhoneRegistrationService } from "../whatsapp/services/phoneRegistration.service.js";
 import type { PhoneNumbersService } from "../whatsapp/services/phoneNumbers.service.js";
 import type { ProfileService } from "../whatsapp/services/profile.service.js";
 import type { TemplatesService } from "../whatsapp/services/templates.service.js";
+import type { WebhooksService } from "../whatsapp/services/webhooks.service.js";
 import type { JsonObject } from "../whatsapp/types.js";
 import type { McpToolResult } from "./toolResult.js";
 
-export type ToolGroup = "account" | "profile" | "messages" | "templates" | "media" | "safety";
+export type ToolGroup =
+  | "account"
+  | "profile"
+  | "messages"
+  | "templates"
+  | "media"
+  | "commerce"
+  | "phone"
+  | "webhooks"
+  | "flows"
+  | "analytics"
+  | "safety";
 
 export interface ToolServices {
   readonly account: AccountService;
@@ -20,6 +36,11 @@ export interface ToolServices {
   readonly templates: TemplatesService;
   readonly profile: ProfileService;
   readonly phoneNumbers: PhoneNumbersService;
+  readonly phoneRegistration: PhoneRegistrationService;
+  readonly commerce: CommerceService;
+  readonly webhooks: WebhooksService;
+  readonly flows: FlowsService;
+  readonly analytics: AnalyticsService;
 }
 
 export interface ToolCatalogEntry extends JsonObject {

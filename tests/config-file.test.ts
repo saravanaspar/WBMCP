@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { chmod, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -75,6 +75,27 @@ describe("WBMCP config file", () => {
     const configFile = getConfigFilePath({ WBMCP_CONFIG_FILE: "/tmp/wbmcp-test.json" });
 
     expect(configFile).toBe("/tmp/wbmcp-test.json");
+  });
+
+  it("normalizes existing config files to owner-only permissions", async () => {
+    const dir = await tempDir();
+    const configFile = path.join(dir, "config.json");
+    const env = { WBMCP_CONFIG_FILE: configFile };
+
+    await writeFile(configFile, "{}\n", { mode: 0o644 });
+    await chmod(configFile, 0o644);
+
+    await writeStoredConfig(
+      {
+        whatsappAccessToken: "placeholder-access-token",
+        whatsappPhoneNumberId: "123456789012345",
+        whatsappBusinessAccountId: "123456789012346"
+      },
+      env
+    );
+
+    const mode = (await stat(configFile)).mode & 0o777;
+    expect(mode).toBe(0o600);
   });
 });
 

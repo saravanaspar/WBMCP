@@ -5,11 +5,16 @@ import { redactSensitive } from "../security/redact.js";
 import { getToolControls, ReadOnlyToolBlockedError, ToolConfirmationRequiredError } from "../security/toolGuards.js";
 import { isJsonObject } from "../whatsapp/types.js";
 import { createAccountTools } from "../tools/account.tools.js";
+import { createAnalyticsTools } from "../tools/analytics.tools.js";
+import { createCommerceTools } from "../tools/commerce.tools.js";
+import { createFlowTools } from "../tools/flows.tools.js";
 import { createMediaTools } from "../tools/media.tools.js";
 import { createMessageTools } from "../tools/messages.tools.js";
+import { createPhoneTools } from "../tools/phone.tools.js";
 import { createProfileTools } from "../tools/profile.tools.js";
 import { createSafetyTools } from "../tools/safety.tools.js";
 import { createTemplateTools } from "../tools/templates.tools.js";
+import { createWebhookTools } from "../tools/webhooks.tools.js";
 import { errorResult } from "../tools/toolResult.js";
 import { isToolReadOnly, type ToolCatalogEntry, type ToolContext, type ToolDefinition } from "../tools/types.js";
 
@@ -20,6 +25,11 @@ export function createToolDefinitions(): ToolDefinition[] {
     ...createMessageTools(),
     ...createTemplateTools(),
     ...createMediaTools(),
+    ...createCommerceTools(),
+    ...createPhoneTools(),
+    ...createWebhookTools(),
+    ...createFlowTools(),
+    ...createAnalyticsTools(),
     ...createSafetyTools()
   ];
 }

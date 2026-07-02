@@ -4,6 +4,34 @@ All notable changes to WBMCP are documented here.
 
 This project follows semantic versioning for npm releases.
 
+## [0.1.3] - 2026-07-02
+
+### Added
+
+* Expanded the registered MCP/SDK tool catalog to 61 tools.
+* Added WhatsApp reaction, sticker, product, product-list, and Flow message tools.
+* Added commerce catalog/product tools for listing, reading, creating, updating, and deleting catalog products.
+* Added phone lifecycle tools for verification codes, registration, deregistration, two-step PINs, and phone settings.
+* Added webhook subscription tools for listing, subscribing, and unsubscribing apps on the configured WABA.
+* Added WhatsApp Flow management tools for listing, reading, creating, updating, uploading Flow JSON, publishing, deprecating, and deleting Flows.
+* Added conversation and template analytics read tools.
+* Added SDK agent helpers: compact tool descriptors, capability metadata, system prompt helper, and non-throwing dynamic tool invocation.
+* Added optional Meta Graph API `appsecret_proof` support when `WHATSAPP_APP_SECRET` or SDK `appSecret` is configured.
+
+### Changed
+
+* Bumped package version from `0.1.2` to `0.1.3`.
+* Updated README and docs for backend web-app AI chat SDK integration, required secrets, server-only credential handling, and current tool inputs.
+* Updated npm publish workflow so branch pushes verify only; publishing now requires a `v*` tag or explicit manual publish input.
+* Expanded CI verification to cover Node.js 20 and 24.
+* Made SDK `client.tools` dynamically reflect the registered tool catalog.
+
+### Fixed
+
+* Hardened hosted HTTPS pending-session cleanup for failed or incomplete initialize requests.
+* Ensured existing stored credential config files are normalized to owner-only `0600` permissions after writes.
+* Exported SDK agent helper types from `wbmcp/sdk`.
+
 ## [0.1.2] - 2026-06-29
 
 ### Added

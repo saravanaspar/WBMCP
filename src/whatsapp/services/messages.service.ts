@@ -4,13 +4,18 @@ import type {
   SendAudioMessageInput,
   SendContactMessageInput,
   SendDocumentMessageInput,
+  SendProductListMessageInput,
+  SendProductMessageInput,
+  SendReactionMessageInput,
   SendImageMessageInput,
   SendInteractiveButtonsInput,
   SendInteractiveListInput,
   SendLocationMessageInput,
+  SendStickerMessageInput,
   SendTextMessageInput,
   SendVideoMessageInput
 } from "../../schemas/message.schemas.js";
+import type { SendFlowMessageInput } from "../../schemas/flow.schemas.js";
 import type { SendTemplateMessageInput } from "../../schemas/template.schemas.js";
 import type { GraphClient } from "../graphClient.js";
 import type { JsonObject, SendMessageResponse } from "../types.js";
@@ -72,6 +77,25 @@ export class MessagesService {
 
   public async sendVideo(input: SendVideoMessageInput): Promise<SendMessageResponse> {
     return this.sendMedia("video", input);
+  }
+
+  public async sendReaction(input: SendReactionMessageInput): Promise<SendMessageResponse> {
+    return this.postMessage({
+      ...this.basePayload(input.recipient_phone_number, input.client_message_id),
+      type: "reaction",
+      reaction: {
+        message_id: input.message_id,
+        emoji: input.emoji
+      }
+    });
+  }
+
+  public async sendSticker(input: SendStickerMessageInput): Promise<SendMessageResponse> {
+    return this.postMessage({
+      ...this.basePayload(input.recipient_phone_number, input.client_message_id),
+      type: "sticker",
+      sticker: this.mediaPayload(input)
+    });
   }
 
   public async sendLocation(input: SendLocationMessageInput): Promise<SendMessageResponse> {
@@ -138,6 +162,68 @@ export class MessagesService {
         action: {
           button: input.button_text,
           sections: toJsonValue(input.sections)
+        }
+      }
+    }));
+  }
+
+  public async sendProduct(input: SendProductMessageInput): Promise<SendMessageResponse> {
+    return this.postMessage(toJsonObject({
+      ...this.basePayload(input.recipient_phone_number, input.client_message_id),
+      type: "interactive",
+      interactive: {
+        type: "product",
+        body: input.body_text ? { text: input.body_text } : undefined,
+        footer: input.footer_text ? { text: input.footer_text } : undefined,
+        action: {
+          catalog_id: input.catalog_id,
+          product_retailer_id: input.product_retailer_id
+        }
+      }
+    }));
+  }
+
+  public async sendProductList(input: SendProductListMessageInput): Promise<SendMessageResponse> {
+    return this.postMessage(toJsonObject({
+      ...this.basePayload(input.recipient_phone_number, input.client_message_id),
+      type: "interactive",
+      interactive: {
+        type: "product_list",
+        header: input.header_text ? { type: "text", text: input.header_text } : undefined,
+        body: { text: input.body_text },
+        footer: input.footer_text ? { text: input.footer_text } : undefined,
+        action: {
+          catalog_id: input.catalog_id,
+          sections: input.sections.map((section) => ({
+            ...(section.title ? { title: section.title } : {}),
+            product_items: section.product_retailer_ids.map((productRetailerId) => ({
+              product_retailer_id: productRetailerId
+            }))
+          }))
+        }
+      }
+    }));
+  }
+
+  public async sendFlow(input: SendFlowMessageInput): Promise<SendMessageResponse> {
+    return this.postMessage(toJsonObject({
+      ...this.basePayload(input.recipient_phone_number, input.client_message_id),
+      type: "interactive",
+      interactive: {
+        type: "flow",
+        header: input.header_text ? { type: "text", text: input.header_text } : undefined,
+        body: { text: input.body_text },
+        footer: input.footer_text ? { text: input.footer_text } : undefined,
+        action: {
+          name: "flow",
+          parameters: {
+            flow_message_version: "3",
+            flow_id: input.flow_id,
+            flow_token: input.flow_token,
+            flow_cta: input.flow_cta,
+            ...(input.mode ? { mode: input.mode } : {}),
+            ...(input.language_code ? { flow_action_payload: { language: input.language_code } } : {})
+          }
         }
       }
     }));

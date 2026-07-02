@@ -3,13 +3,18 @@ import {
   sendAudioMessageInputSchema,
   sendContactMessageInputSchema,
   sendDocumentMessageInputSchema,
+  sendProductListMessageInputSchema,
+  sendProductMessageInputSchema,
   sendImageMessageInputSchema,
   sendInteractiveButtonsInputSchema,
   sendInteractiveListInputSchema,
   sendLocationMessageInputSchema,
+  sendReactionMessageInputSchema,
+  sendStickerMessageInputSchema,
   sendTextMessageInputSchema,
   sendVideoMessageInputSchema
 } from "../schemas/message.schemas.js";
+import { sendFlowMessageInputSchema } from "../schemas/flow.schemas.js";
 import { sendTemplateMessageInputSchema } from "../schemas/template.schemas.js";
 import { maskPhoneNumber } from "../whatsapp/validators.js";
 import { defineTool, type ToolDefinition } from "./types.js";
@@ -106,6 +111,32 @@ export function createMessageTools(): ToolDefinition[] {
         input.dryRun ? sendMediaPreview("video", input) : successResult(await context.services.messages.sendVideo(input))
     }),
     defineTool({
+      name: "whatsapp_send_reaction_message",
+      title: "Send WhatsApp Reaction Message",
+      description: "Sends one emoji reaction to a WhatsApp message. Use dryRun: true to preview without sending.",
+      inputSchema: sendReactionMessageInputSchema,
+      group: "messages",
+      inputShape: sendReactionMessageInputSchema.shape,
+      permission: "dangerous",
+      supportsDryRun: true,
+      execute: async (input, context) =>
+        input.dryRun
+          ? sendPreview("reaction", input, { message_id: input.message_id, emoji: input.emoji })
+          : successResult(await context.services.messages.sendReaction(input))
+    }),
+    defineTool({
+      name: "whatsapp_send_sticker_message",
+      title: "Send WhatsApp Sticker Message",
+      description: "Sends one WhatsApp sticker message by media ID or HTTPS media URL. Use dryRun: true to preview without sending.",
+      inputSchema: sendStickerMessageInputSchema,
+      group: "messages",
+      inputShape: sendStickerMessageInputSchema.shape,
+      permission: "dangerous",
+      supportsDryRun: true,
+      execute: async (input, context) =>
+        input.dryRun ? sendMediaPreview("sticker", input) : successResult(await context.services.messages.sendSticker(input))
+    }),
+    defineTool({
       name: "whatsapp_send_location_message",
       title: "Send WhatsApp Location Message",
       description:
@@ -166,6 +197,48 @@ export function createMessageTools(): ToolDefinition[] {
           : successResult(await context.services.messages.sendInteractiveList(input))
     }),
     defineTool({
+      name: "whatsapp_send_product_message",
+      title: "Send WhatsApp Product Message",
+      description: "Sends one WhatsApp single-product commerce message. Use dryRun: true to preview without sending.",
+      inputSchema: sendProductMessageInputSchema,
+      group: "messages",
+      inputShape: sendProductMessageInputSchema.shape,
+      permission: "dangerous",
+      supportsDryRun: true,
+      execute: async (input, context) =>
+        input.dryRun
+          ? sendPreview("product", input, { catalog_id: input.catalog_id, product_retailer_id: input.product_retailer_id })
+          : successResult(await context.services.messages.sendProduct(input))
+    }),
+    defineTool({
+      name: "whatsapp_send_product_list_message",
+      title: "Send WhatsApp Product List Message",
+      description: "Sends one WhatsApp multi-product commerce message. Use dryRun: true to preview without sending.",
+      inputSchema: sendProductListMessageInputSchema,
+      group: "messages",
+      inputShape: sendProductListMessageInputSchema.shape,
+      permission: "dangerous",
+      supportsDryRun: true,
+      execute: async (input, context) =>
+        input.dryRun
+          ? sendPreview("product_list", input, { catalog_id: input.catalog_id, section_count: input.sections.length })
+          : successResult(await context.services.messages.sendProductList(input))
+    }),
+    defineTool({
+      name: "whatsapp_send_flow_message",
+      title: "Send WhatsApp Flow Message",
+      description: "Sends one WhatsApp Flow interactive message. Use dryRun: true to preview without sending.",
+      inputSchema: sendFlowMessageInputSchema,
+      group: "messages",
+      inputShape: sendFlowMessageInputSchema.shape,
+      permission: "dangerous",
+      supportsDryRun: true,
+      execute: async (input, context) =>
+        input.dryRun
+          ? sendPreview("flow", input, { flow_id: input.flow_id, flow_cta: input.flow_cta, body_text: input.body_text })
+          : successResult(await context.services.messages.sendFlow(input))
+    }),
+    defineTool({
       name: "whatsapp_mark_message_as_read",
       title: "Mark WhatsApp Message As Read",
       description: "Marks one inbound WhatsApp message as read. Requires dangerous tools and may require confirm: true.",
@@ -179,7 +252,7 @@ export function createMessageTools(): ToolDefinition[] {
 }
 
 function sendMediaPreview(
-  type: "image" | "document" | "audio" | "video",
+  type: "image" | "document" | "audio" | "video" | "sticker",
   input: {
     readonly recipient_phone_number: string;
     readonly media_id?: string | undefined;

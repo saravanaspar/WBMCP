@@ -20,6 +20,7 @@ interface HttpsSession {
   readonly server: McpServer;
   readonly transport: StreamableHTTPServerTransport;
   idleTimer: NodeJS.Timeout;
+  closed: boolean;
 }
 
 type McpServerFactory = () => McpServer;
@@ -179,7 +180,15 @@ function createSession(
     sessionIdGenerator: () => randomUUID(),
     onsessioninitialized: (sessionId) => {
       currentSessionId = sessionId;
-      const session = createTrackedSession(server, transport, sessionId, sessions, idleTimeoutMs);
+      markPendingSessionResolved(pendingSession);
+      const session = createTrackedSession(
+        server,
+        transport,
+        () => {
+          void closeSession(sessionId, sessions);
+        },
+        idleTimeoutMs
+      );
       sessions.set(sessionId, session);
     },
     onsessionclosed: (sessionId) => {
@@ -187,30 +196,36 @@ function createSession(
     }
   });
 
-  const pendingSession = createTrackedSession(server, transport, "", sessions, idleTimeoutMs);
+  const pendingSession = createTrackedSession(server, transport, () => {
+    void closePendingSession(pendingSession);
+  }, idleTimeoutMs);
   transport.onclose = () => {
     if (currentSessionId) {
       void closeSession(currentSessionId, sessions);
     } else {
-      clearTimeout(pendingSession.idleTimer);
-      void server.close();
+      void closePendingSession(pendingSession);
     }
   };
 
   return pendingSession;
 }
 
+function markPendingSessionResolved(session: HttpsSession): void {
+  session.closed = true;
+  clearTimeout(session.idleTimer);
+}
+
 function createTrackedSession(
   server: McpServer,
   transport: StreamableHTTPServerTransport,
-  sessionId: string,
-  sessions: Map<string, HttpsSession>,
+  onIdle: () => void,
   idleTimeoutMs: number
 ): HttpsSession {
   const session: HttpsSession = {
     server,
     transport,
-    idleTimer: setIdleTimer(sessionId, sessions, idleTimeoutMs)
+    idleTimer: setIdleTimer(onIdle, idleTimeoutMs),
+    closed: false
   };
   session.idleTimer.unref();
   return session;
@@ -223,19 +238,15 @@ function refreshIdleTimer(
   idleTimeoutMs: number
 ): void {
   clearTimeout(session.idleTimer);
-  session.idleTimer = setIdleTimer(sessionId, sessions, idleTimeoutMs);
+  session.idleTimer = setIdleTimer(() => {
+    void closeSession(sessionId, sessions);
+  }, idleTimeoutMs);
   session.idleTimer.unref();
 }
 
-function setIdleTimer(
-  sessionId: string,
-  sessions: Map<string, HttpsSession>,
-  idleTimeoutMs: number
-): NodeJS.Timeout {
+function setIdleTimer(onIdle: () => void, idleTimeoutMs: number): NodeJS.Timeout {
   return setTimeout(() => {
-    if (sessionId) {
-      void closeSession(sessionId, sessions);
-    }
+    onIdle();
   }, idleTimeoutMs);
 }
 
@@ -246,6 +257,19 @@ async function closeSession(sessionId: string, sessions: Map<string, HttpsSessio
   }
 
   sessions.delete(sessionId);
+  await closeTrackedSession(session);
+}
+
+async function closePendingSession(session: HttpsSession): Promise<void> {
+  await closeTrackedSession(session);
+}
+
+async function closeTrackedSession(session: HttpsSession): Promise<void> {
+  if (session.closed) {
+    return;
+  }
+
+  session.closed = true;
   clearTimeout(session.idleTimer);
   await Promise.allSettled([session.transport.close(), session.server.close()]);
 }

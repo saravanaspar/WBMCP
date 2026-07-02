@@ -62,6 +62,25 @@ export const sendVideoMessageInputSchema = z.object(sendVideoMessageShape).stric
   message: "provide exactly one of media_id or media_url"
 });
 
+export const sendReactionMessageInputSchema = z
+  .object({
+    ...baseSendShape,
+    message_id: graphIdSchema,
+    emoji: z.string().trim().min(1).max(16)
+  })
+  .strict();
+
+export const sendStickerMessageInputSchema = z
+  .object({
+    ...baseSendShape,
+    media_id: graphIdSchema.optional(),
+    media_url: mediaUrlSchema.optional()
+  })
+  .strict()
+  .refine(hasExactlyOneMediaReference, {
+    message: "provide exactly one of media_id or media_url"
+  });
+
 export const sendLocationMessageInputSchema = z
   .object({
     ...baseSendShape,
@@ -132,6 +151,34 @@ export const sendInteractiveListInputSchema = z
   })
   .strict();
 
+export const sendProductMessageInputSchema = z
+  .object({
+    ...baseSendShape,
+    catalog_id: graphIdSchema,
+    product_retailer_id: z.string().trim().min(1).max(128),
+    body_text: z.string().trim().min(1).max(MAX_INTERACTIVE_BODY_LENGTH).optional(),
+    footer_text: z.string().trim().min(1).max(60).optional()
+  })
+  .strict();
+
+const productListSectionSchema = z
+  .object({
+    title: z.string().trim().min(1).max(24).optional(),
+    product_retailer_ids: z.array(z.string().trim().min(1).max(128)).min(1).max(30)
+  })
+  .strict();
+
+export const sendProductListMessageInputSchema = z
+  .object({
+    ...baseSendShape,
+    catalog_id: graphIdSchema,
+    body_text: z.string().trim().min(1).max(MAX_INTERACTIVE_BODY_LENGTH),
+    header_text: z.string().trim().min(1).max(MAX_INTERACTIVE_TITLE_LENGTH).optional(),
+    footer_text: z.string().trim().min(1).max(60).optional(),
+    sections: z.array(productListSectionSchema).min(1).max(10)
+  })
+  .strict();
+
 export const markMessageAsReadInputSchema = z
   .object({
     message_id: graphIdSchema,
@@ -144,10 +191,14 @@ export type SendImageMessageInput = z.infer<typeof sendImageMessageInputSchema>;
 export type SendDocumentMessageInput = z.infer<typeof sendDocumentMessageInputSchema>;
 export type SendAudioMessageInput = z.infer<typeof sendAudioMessageInputSchema>;
 export type SendVideoMessageInput = z.infer<typeof sendVideoMessageInputSchema>;
+export type SendReactionMessageInput = z.infer<typeof sendReactionMessageInputSchema>;
+export type SendStickerMessageInput = z.infer<typeof sendStickerMessageInputSchema>;
 export type SendLocationMessageInput = z.infer<typeof sendLocationMessageInputSchema>;
 export type SendContactMessageInput = z.infer<typeof sendContactMessageInputSchema>;
 export type SendInteractiveButtonsInput = z.infer<typeof sendInteractiveButtonsInputSchema>;
 export type SendInteractiveListInput = z.infer<typeof sendInteractiveListInputSchema>;
+export type SendProductMessageInput = z.infer<typeof sendProductMessageInputSchema>;
+export type SendProductListMessageInput = z.infer<typeof sendProductListMessageInputSchema>;
 export type MarkMessageAsReadInput = z.infer<typeof markMessageAsReadInputSchema>;
 
 function hasExactlyOneMediaReference(value: {

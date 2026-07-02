@@ -13,6 +13,7 @@ The repository name is `WBMCP`; the npm package and CLI executable are lowercase
 - stdio MCP transport for local `npx` MCP clients
 - MCP Streamable HTTP transport over native HTTPS for explicit hosted deployments
 - Native HTTPS transport with PEM certificate and key files
+- Importable backend SDK through `wbmcp/sdk`
 
 ## Main Commands
 
@@ -60,6 +61,24 @@ Manual HTTPS smoke requests must include `Accept: application/json, text/event-s
 
 Optional secrets such as `WHATSAPP_APP_SECRET` should be omitted when unused. Empty optional secret values are invalid by design.
 
+## SDK Entry Points
+
+Backend applications should import the SDK with:
+
+```ts
+import { createWhatsAppBusinessClient } from "wbmcp/sdk";
+```
+
+The SDK exposes the same registered tool catalog as the MCP server. Agent integrations can use:
+
+```ts
+const tools = whatsapp.agent.tools({ descriptions: "compact" });
+const prompt = whatsapp.agent.systemPrompt();
+const result = await whatsapp.callTool(toolName, args);
+```
+
+SDK credentials are passed as direct values. They are not read from `~/.config/wbmcp/config.json` unless your application explicitly loads that file.
+
 ## Package Shape
 
 The package exposes these bin entries after build:
@@ -72,6 +91,16 @@ The package exposes these bin entries after build:
 ```
 
 `npm pack` and `npm publish` run `npm run build` first through `prepack`, so published archives contain fresh `dist/` output. The package metadata points to <https://github.com/saravanaspar/WBMCP>. After publishing, MCP clients can launch the server with `npx -y wbmcp@latest`.
+
+Public import paths:
+
+```text
+wbmcp
+wbmcp/sdk
+wbmcp/server
+wbmcp/schemas
+wbmcp/whatsapp
+```
 
 ## Dependency Policy
 

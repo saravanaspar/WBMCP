@@ -22,9 +22,19 @@ Do not include real access tokens, app secrets, customer phone numbers, or priva
 - Never commit `.env` files.
 - Never paste real `WHATSAPP_ACCESS_TOKEN` values into issues, tests, docs, examples, logs, or prompts.
 - Pass secrets through MCP client environment configuration or a secret manager.
+- For SDK/web-app integrations, initialize WBMCP only in backend/server code. Never expose WhatsApp access tokens, app secrets, WABA IDs, or phone number IDs to browser JavaScript.
+- Configure `WHATSAPP_APP_SECRET` or the SDK `appSecret` option when available so Graph API calls include `appsecret_proof`.
 - The server redacts token-like fields and Authorization headers from audit events and safe errors.
 - Optional secrets should be omitted when unused; empty optional secret environment variables are rejected rather than silently accepted.
 - Logs go to stderr so stdio MCP traffic on stdout is not polluted.
+
+## SDK Safety
+
+- Use `readOnly: true` for dashboards, audits, and testing flows that should not mutate WhatsApp state.
+- Use `requireConfirmation: true` when an AI agent can call dangerous tools.
+- Prefer `dryRun: true` before final send-message calls.
+- Treat all model-provided tool arguments as untrusted input. WBMCP validates tool schemas, but your application is still responsible for opt-in, tenancy, authorization, and business policy checks before passing `confirm: true`.
+- Do not return raw tokens, full phone numbers, message bodies, or webhook payloads to the browser unless your product has an explicit safe-display policy.
 
 ## Transport Security
 

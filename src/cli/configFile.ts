@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { chmod, mkdir, readFile, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { z } from "zod";
@@ -88,6 +88,7 @@ export async function writeStoredConfig(
 
   await mkdir(path.dirname(configFile), { recursive: true });
   await writeFile(configFile, serialized, { mode: 0o600 });
+  await chmod(configFile, 0o600);
   return configFile;
 }
 

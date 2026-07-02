@@ -1,6 +1,6 @@
 # WBMCP
 
-**WBMCP** is an MCP server for the official WhatsApp Business Cloud API. It lets MCP-compatible AI clients use WhatsApp Business tools for sending messages, managing templates, working with media, reading account details, and updating business profile information.
+**WBMCP** is an MCP server and TypeScript SDK for the official WhatsApp Business Cloud API. It lets AI clients and backend applications use WhatsApp Business tools for messaging, templates, media metadata, business/profile data, commerce catalogs, phone lifecycle operations, webhook subscriptions, Flows, analytics, and safety checks.
 
 - GitHub: https://github.com/saravanaspar/WBMCP
 - npm: https://www.npmjs.com/package/wbmcp
@@ -27,17 +27,26 @@ WBMCP is the AI/MCP tool layer. It can help an AI client perform WhatsApp Busine
 
 WBMCP exposes WhatsApp Business Cloud API actions as MCP tools.
 
+Current tool count: **61**.
+
 Main capabilities:
 
 - send text messages
 - send template messages
 - send image, document, audio, and video messages
+- send reaction, sticker, product, product-list, and Flow messages
 - send location and contact messages
 - send interactive button and list messages
 - mark messages as read
 - list and inspect message templates
 - create and delete templates
 - get and delete media
+- list catalogs and catalog products
+- create, update, and delete catalog products
+- request/verify/register/deregister phone numbers
+- manage webhook app subscriptions
+- list, create, update, publish, deprecate, and delete WhatsApp Flows
+- read conversation and template analytics
 - get and update business profile information
 - get WhatsApp Business account information
 - list phone numbers
@@ -53,7 +62,7 @@ WBMCP does not provide:
 - a customer inbox UI
 - a team inbox
 - conversation storage
-- webhook hosting
+- webhook receiver hosting
 - CRM features
 - campaign or bulk messaging software
 - a public REST API for users
@@ -133,6 +142,8 @@ WHATSAPP_APP_SECRET=your-meta-app-secret
 ```
 
 `MCP_ENABLE_DANGEROUS_TOOLS=true` is required for tools that send, create, update, or delete data. Leave it `false` for read-only usage.
+
+`WHATSAPP_APP_SECRET` is optional but recommended for backend deployments because WBMCP uses it to add Meta Graph API `appsecret_proof` to outbound API calls. Never expose it to browser code.
 
 ### OpenCode
 
@@ -277,10 +288,22 @@ Env-config mode:
 
 ## SDK usage
 
-WBMCP is also importable as a TypeScript SDK for backend applications that want to pass WhatsApp credentials directly instead of starting a local MCP server process.
+WBMCP is also importable as a TypeScript SDK for backend applications. This is the recommended path when you are integrating WhatsApp tools into your own web app AI chat.
+
+Important: initialize the SDK only on your server. Do not send `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_APP_SECRET`, phone number IDs, or business account IDs to browser code.
 
 ```bash
 npm install wbmcp
+```
+
+Server-side environment:
+
+```bash
+WHATSAPP_ACCESS_TOKEN=replace-with-your-meta-system-user-token
+WHATSAPP_PHONE_NUMBER_ID=123456789012345
+WHATSAPP_BUSINESS_ACCOUNT_ID=123456789012346
+WHATSAPP_GRAPH_API_VERSION=v24.0
+WHATSAPP_APP_SECRET=replace-with-your-meta-app-secret
 ```
 
 ```ts
@@ -290,17 +313,65 @@ const whatsapp = createWhatsAppBusinessClient({
   accessToken: process.env.WHATSAPP_ACCESS_TOKEN!,
   phoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID!,
   businessAccountId: process.env.WHATSAPP_BUSINESS_ACCOUNT_ID!,
-  graphApiVersion: "v24.0",
-  enableDangerousTools: true
-});
-
-await whatsapp.messages.sendText({
-  recipient_phone_number: "+15551234567",
-  message_body: "Hello from WBMCP SDK"
+  graphApiVersion: process.env.WHATSAPP_GRAPH_API_VERSION ?? "v24.0",
+  appSecret: process.env.WHATSAPP_APP_SECRET,
+  enableDangerousTools: true,
+  requireConfirmation: true
 });
 ```
 
-Every MCP tool is exposed one-to-one under `client.tools.<tool_name>`, and typed convenience namespaces are available for `account`, `profile`, `messages`, `templates`, `media`, and `safety`. See [`docs/SDK.md`](docs/SDK.md) for full details.
+Expose tool metadata to your AI layer:
+
+```ts
+const toolsForAgent = whatsapp.agent.tools({
+  descriptions: "compact",
+  includeDangerous: true,
+  enabledOnly: true
+});
+
+const systemPrompt = whatsapp.agent.systemPrompt();
+```
+
+When your AI model chooses a tool, call it on the server:
+
+```ts
+const result = await whatsapp.callTool(toolName, toolArguments);
+
+if (!result.ok) {
+  return { error: result.error };
+}
+
+return { data: result.data };
+```
+
+Direct typed calls are also available:
+
+```ts
+await whatsapp.messages.sendText({
+  recipient_phone_number: "+15551234567",
+  message_body: "Hello from WBMCP SDK",
+  confirm: true
+});
+```
+
+Every MCP tool is exposed one-to-one under `client.tools.<tool_name>`, and typed convenience namespaces are available for common read, message, template, media, and safety calls. See [`docs/SDK.md`](docs/SDK.md) for web-app AI chat integration details.
+
+### SDK values required by tool category
+
+These values are passed as tool arguments by your server after the AI chooses a tool. Field names are intentionally explicit because agents perform better with concrete names.
+
+| Category | Common values needed |
+| --- | --- |
+| Account/profile reads | Usually `{}` or pagination `{ limit, after }` |
+| Send messages | `recipient_phone_number`; message-specific fields such as `message_body`, `template_name`, `media_id`, `media_url`, `catalog_id`, `flow_id`; use `dryRun: true` for preview and `confirm: true` for final send when confirmation mode is enabled |
+| Templates | `template_id`, `name`, `language`, `category`, `components` depending on list/get/create/delete |
+| Media metadata/delete | `media_id`; delete requires dangerous tools and may require `confirm: true` |
+| Commerce catalogs/products | `catalog_id`, `product_id`, `product_retailer_id`, product fields such as `name`, `price`, `currency`, `image_url` |
+| Phone lifecycle | Optional `phone_number_id`; code/PIN fields such as `code_method`, `code`, `pin` |
+| Webhook subscriptions | Usually `{}` plus `confirm: true` for subscribe/unsubscribe when confirmation mode is enabled |
+| Flows | `flow_id`, `name`, `categories`, `flow_json`; send Flow messages also need `recipient_phone_number`, `flow_token`, `flow_cta`, and `body_text` |
+| Analytics | `start_date`, `end_date`, `granularity` |
+| Safety | `phone_number`, `payload`, or optional `tool_name` |
 
 ## Configuration
 
@@ -494,4 +565,3 @@ See [LICENSE](./LICENSE).
 ## Changelog
 
 See [CHANGELOG.md](./CHANGELOG.md) for release notes.
-

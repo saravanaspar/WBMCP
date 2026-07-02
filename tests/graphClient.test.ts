@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { createHmac } from "node:crypto";
 import { GraphClient } from "../src/whatsapp/graphClient.js";
 import { WhatsAppApiError } from "../src/whatsapp/errors.js";
 
@@ -98,4 +99,36 @@ describe("GraphClient", () => {
     });
   });
 
+  it("adds appsecret_proof when an app secret is configured", async () => {
+    let requestedUrl = "";
+    const client = new GraphClient({
+      accessToken: "placeholder-access-token",
+      graphApiVersion: "v24.0",
+      appSecret: "placeholder-app-secret",
+      fetchFn: (input) => {
+        requestedUrl = requestUrl(input);
+        return Promise.resolve(new Response(JSON.stringify({ ok: true })));
+      }
+    });
+
+    await client.get("/123", { fields: "id" });
+
+    const url = new URL(requestedUrl);
+    expect(url.searchParams.get("appsecret_proof")).toBe(
+      createHmac("sha256", "placeholder-app-secret").update("placeholder-access-token").digest("hex")
+    );
+    expect(url.searchParams.get("fields")).toBe("id");
+  });
 });
+
+function requestUrl(input: Parameters<typeof fetch>[0]): string {
+  if (typeof input === "string") {
+    return input;
+  }
+
+  if (input instanceof URL) {
+    return input.toString();
+  }
+
+  return input.url;
+}
